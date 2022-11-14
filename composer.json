@@ -1,0 +1,57 @@
+{
+	"name": "21torr/task-manager",
+	"description": "A small wrapper around symfony/messenger for simplifying task management.",
+	"license": "MIT",
+	"type": "symfony-bundle",
+	"authors": [
+		{
+			"name": "21TORR",
+			"homepage": "https://www.21torr.com/"
+		}
+	],
+	"homepage": "https://github.com/21TORR/TaskManagerBundle",
+	"require": {
+		"php": ">= 8.1",
+		"21torr/bundle-helpers": "^2.1",
+		"symfony/dependency-injection": "^6.1",
+		"symfony/http-kernel": "^6.1"
+	},
+	"require-dev": {
+		"bamarni/composer-bin-plugin": "^1.8",
+		"phpunit/phpunit": "^9.5",
+		"roave/security-advisories": "dev-latest",
+		"symfony/phpunit-bridge": "^6.1"
+	},
+	"autoload": {
+		"psr-4": {
+			"Torr\\TaskManager\\": "src/"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"Tests\\Torr\\TaskManager\\": "tests/"
+		}
+	},
+	"config": {
+		"allow-plugins": {
+			"bamarni/composer-bin-plugin": true
+		},
+		"sort-packages": true
+	},
+	"scripts": {
+		"post-install-cmd": [
+			"@composer bin all install --ansi"
+		],
+		"post-update-cmd": [
+			"@composer bin all update --ansi"
+		],
+		"lint": [
+			"@composer bin c-norm normalize \"$(pwd)/composer.json\"  --indent-style tab --indent-size 1 --dry-run --ansi",
+			"php-cs-fixer fix --diff --config vendor-bin/cs-fixer/vendor/21torr/php-cs-fixer/.php-cs-fixer.dist.php --dry-run --no-interaction --ansi"
+		],
+		"test": [
+			"phpunit",
+			"phpstan analyze -c phpstan.neon . --ansi"
+		]
+	}
+}
