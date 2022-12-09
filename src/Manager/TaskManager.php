@@ -10,6 +10,7 @@ use Symfony\Component\Messenger\Transport\Receiver\ListableReceiverInterface;
 use Symfony\Component\Messenger\Transport\Sync\SyncTransport;
 use Torr\TaskManager\Config\BundleConfig;
 use Torr\TaskManager\Exception\Manager\InvalidMessageTransportException;
+use Torr\TaskManager\Message\UniqueMessageInterface;
 use Torr\TaskManager\Stamp\UniqueJobStamp;
 
 final class TaskManager
@@ -31,6 +32,11 @@ final class TaskManager
 		?string $jobId = null,
 	) : bool
 	{
+		if (null === $jobId)
+		{
+			$jobId = $this->fetchJobIdFromMessage($message);
+		}
+
 		if (null === $jobId)
 		{
 			$this->messageBus->dispatch($message);
@@ -128,5 +134,24 @@ final class TaskManager
 			\array_keys($this->receivers->getProvidedServices()),
 			fn (string $serviceId) => !\str_starts_with($serviceId, "messenger.transport.") && !\in_array($serviceId, $this->bundleConfig->failureTransports, true),
 		);
+	}
+
+	/**
+	 *
+	 */
+	private function fetchJobIdFromMessage (object $message) : ?string
+	{
+		// unwrap the envelope, as the job id is attached to the message
+		if ($message instanceof Envelope)
+		{
+			$message = $message->getMessage();
+		}
+
+		if ($message instanceof UniqueMessageInterface)
+		{
+			return $message->getJobId();
+		}
+
+		return null;
 	}
 }

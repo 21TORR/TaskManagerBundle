@@ -1,4 +1,10 @@
+1.1.0
+=====
+
+* (feature) Add `UniqueMessageInterface`.
+
+
 1.0.0
 =====
 
-*   (feature) Initial Release. \o/
+Initial Release `\o/`
