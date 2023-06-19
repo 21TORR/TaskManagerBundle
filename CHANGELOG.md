@@ -1,3 +1,9 @@
+1.1.1 (unreleased)
+=====
+
+* (internal) Bump CS dependencies.
+
+
 1.1.0
 =====
 
