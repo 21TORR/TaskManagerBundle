@@ -11,7 +11,7 @@
 	],
 	"homepage": "https://github.com/21TORR/TaskManagerBundle",
 	"require": {
-		"php": ">= 8.2",
+		"php": ">= 8.3",
 		"21torr/bundle-helpers": "^2.1",
 		"21torr/cli": "^1.0",
 		"symfony/config": "^6.4 || ^7.0",
@@ -43,20 +43,24 @@
 		},
 		"sort-packages": true
 	},
+	"extra": {
+		"bamarni-bin": {
+			"bin-links": false,
+			"forward-command": true
+		}
+	},
 	"scripts": {
-		"post-install-cmd": [
-			"@composer bin all install --ansi"
-		],
-		"post-update-cmd": [
-			"@composer bin all update --ansi"
+		"fix-lint": [
+			"vendor-bin/cs-fixer/vendor/bin/php-cs-fixer fix --diff --config vendor-bin/cs-fixer/vendor/21torr/php-cs-fixer/.php-cs-fixer.dist.php --no-interaction --ansi",
+			"@composer bin c-norm normalize \"$(pwd)/composer.json\"  --indent-style tab --indent-size 1 --ansi"
 		],
 		"lint": [
-			"@composer bin c-norm normalize \"$(pwd)/composer.json\" --indent-style tab --indent-size 1 --dry-run --ansi",
-			"php-cs-fixer fix --diff --config vendor-bin/cs-fixer/vendor/21torr/php-cs-fixer/.php-cs-fixer.dist.php --dry-run --no-interaction --ansi"
+			"@composer bin c-norm normalize \"$(pwd)/composer.json\"  --indent-style tab --indent-size 1 --dry-run --ansi",
+			"vendor-bin/cs-fixer/vendor/bin/php-cs-fixer fix --diff --config vendor-bin/cs-fixer/vendor/21torr/php-cs-fixer/.php-cs-fixer.dist.php --dry-run --no-interaction --ansi"
 		],
 		"test": [
 			"phpunit",
-			"phpstan analyze -c phpstan.neon . --ansi"
+			"vendor-bin/test/vendor/bin/phpstan analyze -c phpstan.neon . --ansi"
 		]
 	}
 }
