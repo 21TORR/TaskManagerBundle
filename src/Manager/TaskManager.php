@@ -8,6 +8,7 @@ use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Transport\Receiver\ListableReceiverInterface;
 use Symfony\Component\Messenger\Transport\Sync\SyncTransport;
+use Symfony\Component\Messenger\Transport\TransportInterface;
 use Torr\TaskManager\Config\BundleConfig;
 use Torr\TaskManager\Exception\Manager\InvalidMessageTransportException;
 use Torr\TaskManager\Message\UniqueMessageInterface;
@@ -16,6 +17,7 @@ use Torr\TaskManager\Stamp\UniqueJobStamp;
 final class TaskManager
 {
 	public function __construct (
+		/** @var ServiceLocator<TransportInterface> */
 		private readonly ServiceLocator $receivers,
 		private readonly MessageBusInterface $messageBus,
 		private readonly BundleConfig $bundleConfig,
