@@ -1,3 +1,12 @@
+1.3.0
+=====
+
+* (improvement) Temporarily allow PHP 8.1 again.
+* (feature) Add infrastructure to collect `Task` definitions to be able to build UI for it, by using the `RegisterTasksEvent`.
+* (feature) Add `task-manager:list-tasks` command.
+* (feature) Add `task-manager:queue` command.
+
+
 1.2.0
 =====
 

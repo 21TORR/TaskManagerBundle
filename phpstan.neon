@@ -1,5 +1,2 @@
 includes:
-    - vendor-bin/test/vendor/21torr/php-cs/phpstan/lib.neon
-
-parameters:
-    level: 9
+    - vendor/21torr/janus/phpstan/lib.neon
