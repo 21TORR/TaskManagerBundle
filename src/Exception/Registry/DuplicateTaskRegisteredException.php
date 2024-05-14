@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Torr\TaskManager\Exception\Registration;
+namespace Torr\TaskManager\Exception\Registry;
 
 use Torr\TaskManager\Exception\TaskManagerException;
 
