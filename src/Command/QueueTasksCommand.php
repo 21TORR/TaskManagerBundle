@@ -10,6 +10,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Torr\Cli\Console\Style\TorrStyle;
 use Torr\TaskManager\Exception\Registry\UnknownTaskKeyException;
 use Torr\TaskManager\Manager\TaskManager;
+use Torr\TaskManager\Receiver\ReceiverHelper;
 use Torr\TaskManager\Registry\Data\Task;
 use Torr\TaskManager\Registry\TaskRegistry;
 
@@ -21,6 +22,7 @@ final class QueueTasksCommand extends Command
 	public function __construct (
 		private readonly TaskRegistry $taskRegistry,
 		private readonly TaskManager $taskManager,
+		private readonly ReceiverHelper $receiverHelper,
 	)
 	{
 		parent::__construct();
@@ -42,7 +44,12 @@ final class QueueTasksCommand extends Command
 	protected function execute (InputInterface $input, OutputInterface $output) : int
 	{
 		$io = new TorrStyle($input, $output);
-	$io->title("Task Manager: Queue Task");
+		$io->title("Task Manager: Queue Task");
+
+		if ($this->receiverHelper->hasSyncTransport())
+		{
+			$io->caution("The app is using sync transports: that means that registered tasks are directly worked on.");
+		}
 
 		try
 		{
