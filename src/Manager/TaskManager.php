@@ -11,8 +11,7 @@ use Symfony\Component\Messenger\Transport\Sync\SyncTransport;
 use Symfony\Component\Messenger\Transport\TransportInterface;
 use Torr\TaskManager\Config\BundleConfig;
 use Torr\TaskManager\Exception\Manager\InvalidMessageTransportException;
-use Torr\TaskManager\Message\UniqueMessageInterface;
-use Torr\TaskManager\Stamp\UniqueJobStamp;
+use Torr\TaskManager\Task\Task;
 
 final class TaskManager
 {
@@ -39,23 +38,12 @@ final class TaskManager
 			$jobId = $this->fetchJobIdFromMessage($message);
 		}
 
-		if (null === $jobId)
-		{
-			$this->messageBus->dispatch($message);
-			return true;
-		}
-
-		if (null !== $this->findQueuedMessageByUniqueJobId($jobId))
+		if (null !== $jobId && null !== $this->findQueuedMessageByUniqueJobId($jobId))
 		{
 			return false;
 		}
 
-		$envelope = $message instanceof Envelope
-			? $message
-			: new Envelope($message);
-
-		$envelope = $envelope->with(new UniqueJobStamp($jobId));
-		$this->messageBus->dispatch($envelope);
+		$this->messageBus->dispatch($message);
 		return true;
 
 	}
@@ -70,9 +58,7 @@ final class TaskManager
 		{
 			foreach ($this->fetchTasksInQueue($queueName) as $envelope)
 			{
-				$stamp = $envelope->last(UniqueJobStamp::class);
-
-				if (null !== $stamp && $stamp->jobId === $jobId)
+				if ($this->fetchJobIdFromMessage($envelope) === $jobId)
 				{
 					return $envelope;
 				}
@@ -138,6 +124,7 @@ final class TaskManager
 		);
 	}
 
+
 	/**
 	 *
 	 */
@@ -149,11 +136,8 @@ final class TaskManager
 			$message = $message->getMessage();
 		}
 
-		if ($message instanceof UniqueMessageInterface)
-		{
-			return $message->getJobId();
-		}
-
-		return null;
+		return $message instanceof Task
+			? $message->getMetaData()->uniqueTaskId
+			: null;
 	}
 }
