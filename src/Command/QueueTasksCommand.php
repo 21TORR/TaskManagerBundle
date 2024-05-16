@@ -11,8 +11,8 @@ use Torr\Cli\Console\Style\TorrStyle;
 use Torr\TaskManager\Exception\Registry\UnknownTaskKeyException;
 use Torr\TaskManager\Manager\TaskManager;
 use Torr\TaskManager\Receiver\ReceiverHelper;
-use Torr\TaskManager\Registry\Data\Task;
 use Torr\TaskManager\Registry\TaskRegistry;
+use Torr\TaskManager\Task\Task;
 
 #[AsCommand("task-manager:queue")]
 final class QueueTasksCommand extends Command
@@ -74,7 +74,7 @@ final class QueueTasksCommand extends Command
 				"• Queuing task %s",
 				$this->formatTaskLabel($task),
 			));
-			$this->taskManager->enqueue($task->task);
+			$this->taskManager->enqueue($task);
 		}
 
 		$io->success("All done.");
@@ -154,15 +154,17 @@ final class QueueTasksCommand extends Command
 	 */
 	private function formatTaskLabel (Task $task) : string
 	{
-		if (null !== $task->group)
+		$metaData = $task->getMetaData();
+
+		if (null !== $metaData->group)
 		{
 			return \sprintf(
 				"<fg=blue>%s</>: %s",
-				$task->group,
-				$task->label,
+				$metaData->group,
+				$metaData->label,
 			);
 		}
 
-		return $task->label;
+		return $metaData->label;
 	}
 }

@@ -2,14 +2,25 @@
 
 namespace Torr\TaskManager\Task;
 
-use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Uid\Ulid;
 
-final class Task
+/**
+ * A runnable task
+ */
+abstract class Task
 {
+	public readonly string $ulid;
+
 	/**
 	 */
-	public function __construct (
-		public readonly string $queueName,
-		public readonly Envelope $envelope,
-	) {}
+	public function __construct ()
+	{
+		$this->ulid = (new Ulid())->toBase58();
+	}
+
+
+	/**
+	 * Defines the metadata for this task
+	 */
+	abstract public function getMetaData () : TaskMetaData;
 }
