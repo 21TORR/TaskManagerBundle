@@ -4,7 +4,7 @@ namespace Torr\TaskManager\Registry;
 
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Torr\TaskManager\Event\RegisterTasksEvent;
-use Torr\TaskManager\Registry\Data\Task;
+use Torr\TaskManager\Task\Task;
 
 /**
  * Contains all tasks that are automatically configured to be runnable.
@@ -59,16 +59,18 @@ final class TaskRegistry
 
 		foreach ($tasks as $task)
 		{
-			if (null !== $task->group)
+			$definition = $task->getMetaData();
+
+			if (null !== $definition->group)
 			{
-				$grouped[$task->group][] = $task;
+				$grouped[$definition->group][] = $task;
 			}
 			else
 			{
 				$ungrouped[] = $task;
 			}
 
-			$this->keyMap[$task->key] = $task;
+			$this->keyMap[$definition->getKey()] = $task;
 		}
 
 		// sort groups by group label
@@ -85,7 +87,7 @@ final class TaskRegistry
 		{
 			\usort(
 				$entries,
-				static fn (Task $left, Task $right) => \strnatcasecmp($left->label, $right->label),
+				static fn (Task $left, Task $right) => \strnatcasecmp($left->getMetaData()->label, $right->getMetaData()->label),
 			);
 		}
 

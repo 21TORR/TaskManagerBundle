@@ -55,6 +55,7 @@ final class ListTasksCommand extends Command
 			foreach ($tasks as $task)
 			{
 				$row = [];
+				$metaData = $task->getMetaData();
 
 				if ($first)
 				{
@@ -69,10 +70,10 @@ final class ListTasksCommand extends Command
 
 				$row[] = \sprintf(
 					"<fg=yellow>%s</>",
-					$task->key,
+					$metaData->getKey(),
 				);
-				$row[] = $task->label;
-				$row[] = \get_class($task->task);
+				$row[] = $metaData->label;
+				$row[] = \get_class($task);
 				$rows[] = $row;
 			}
 		}
