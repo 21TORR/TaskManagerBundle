@@ -23,7 +23,7 @@ final class RegisterTasksEvent
 	 *
 	 * @throws DuplicateTaskRegisteredException
 	 */
-	public function registerTask (Task $task) : self
+	public function register (Task $task) : self
 	{
 		$definition = $task->getMetaData();
 		$key = $definition->getKey();
