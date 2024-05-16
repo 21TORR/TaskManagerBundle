@@ -8,14 +8,14 @@ use function Symfony\Component\String\u;
 /**
  * A VO that describes a task
  */
-final class TaskMetaData
+final readonly class TaskMetaData
 {
 	/**
 	 */
 	public function __construct (
-		public readonly string $label,
-		public readonly ?string $group = null,
-		public readonly ?string $uniqueTaskId = null,
+		public string $label,
+		public ?string $group = null,
+		public ?string $uniqueTaskId = null,
 	) {}
 
 

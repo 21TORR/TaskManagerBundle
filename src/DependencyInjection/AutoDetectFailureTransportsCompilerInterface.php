@@ -18,7 +18,7 @@ final class AutoDetectFailureTransportsCompilerInterface implements CompilerPass
 	{
 		$failureTransports = [];
 
-		foreach ($container->findTaggedServiceIds("messenger.receiver") as $key => $tagConfigs)
+		foreach ($container->findTaggedServiceIds("messenger.receiver") as $tagConfigs)
 		{
 			foreach ($tagConfigs as $tagConfig)
 			{

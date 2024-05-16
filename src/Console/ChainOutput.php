@@ -7,10 +7,10 @@ use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 
-final class ChainOutput implements OutputInterface
+final readonly class ChainOutput implements OutputInterface
 {
-	private readonly ConsoleOutput $consoleOutput;
-	private readonly BufferedOutput $bufferedOutput;
+	private ConsoleOutput $consoleOutput;
+	private BufferedOutput $bufferedOutput;
 
 	/**
 	 */

@@ -13,13 +13,13 @@ use Torr\TaskManager\Config\BundleConfig;
 use Torr\TaskManager\Exception\Manager\InvalidMessageTransportException;
 use Torr\TaskManager\Task\Task;
 
-final class TaskManager
+final readonly class TaskManager
 {
 	public function __construct (
 		/** @var ServiceLocator<TransportInterface> */
-		private readonly ServiceLocator $receivers,
-		private readonly MessageBusInterface $messageBus,
-		private readonly BundleConfig $bundleConfig,
+		private ServiceLocator $receivers,
+		private MessageBusInterface $messageBus,
+		private BundleConfig $bundleConfig,
 	) {}
 
 

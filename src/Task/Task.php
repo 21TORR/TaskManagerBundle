@@ -7,9 +7,9 @@ use Symfony\Component\Uid\Ulid;
 /**
  * A runnable task
  */
-abstract class Task
+abstract readonly class Task
 {
-	public readonly string $ulid;
+	public string $ulid;
 
 	/**
 	 */

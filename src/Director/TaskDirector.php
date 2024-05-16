@@ -5,12 +5,12 @@ namespace Torr\TaskManager\Director;
 use Torr\TaskManager\Model\TaskLogModel;
 use Torr\TaskManager\Task\Task;
 
-final class TaskDirector
+final readonly class TaskDirector
 {
 	/**
 	 */
 	public function __construct (
-		private readonly TaskLogModel $logModel,
+		private TaskLogModel $logModel,
 	) {}
 
 
