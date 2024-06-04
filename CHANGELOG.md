@@ -1,3 +1,9 @@
+1.3.1
+=====
+
+* (improvement) Display `Task`'s key in `task-manager:queue` overview for easier identification.
+
+
 1.3.0
 =====
 
