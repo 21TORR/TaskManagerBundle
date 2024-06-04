@@ -2,7 +2,7 @@
 
 namespace Torr\TaskManager\Receiver;
 
-use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use Symfony\Component\Messenger\Transport\Sync\SyncTransport;
 use Symfony\Component\Messenger\Transport\TransportInterface;
 
@@ -15,7 +15,7 @@ final class ReceiverHelper
 	 */
 	public function __construct (
 		/** @var iterable<TransportInterface> */
-		#[TaggedIterator("messenger.receiver")]
+		#[AutowireIterator(tag: "messenger.receiver")]
 		private readonly iterable $transports,
 	) {}
 
