@@ -157,9 +157,10 @@ final class QueueTasksCommand extends Command
 		if (null !== $task->group)
 		{
 			return \sprintf(
-				"<fg=blue>%s</>: %s",
+				"<fg=blue>%s</>: %s (%s)",
 				$task->group,
 				$task->label,
+				$task->key,
 			);
 		}
 
