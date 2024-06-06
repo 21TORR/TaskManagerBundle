@@ -2,12 +2,15 @@
 
 namespace Tests\Torr\TaskManager\Transport;
 
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Torr\TaskManager\Config\BundleConfig;
-use PHPUnit\Framework\TestCase;
 use Torr\TaskManager\Transport\TransportsHelper;
 
-class TransportsHelperTest extends TestCase
+/**
+ * @internal
+ */
+final class TransportsHelperTest extends TestCase
 {
 	public function testOrderedTransports () : void
 	{
@@ -21,15 +24,15 @@ class TransportsHelperTest extends TestCase
 
 		// the ones not from the config should keep the order
 		$locator = new ServiceLocator([
-			"test" => fn () => null,
-			"app" => fn () => null,
-			"very_urgent" => fn () => null,
-			"test2" => fn () => null,
+			"test" => static fn () => null,
+			"app" => static fn () => null,
+			"very_urgent" => static fn () => null,
+			"test2" => static fn () => null,
 		]);
 
 		$helper = new TransportsHelper($locator, $config);
 
-		self::assertEquals([
+		self::assertSame([
 			"very_urgent",
 			"app",
 			"test",

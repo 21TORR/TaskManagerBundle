@@ -38,7 +38,6 @@ final readonly class TransportsHelper
 		return false;
 	}
 
-
 	/**
 	 * @return array<string, TransportInterface>
 	 */
@@ -46,11 +45,11 @@ final readonly class TransportsHelper
 	{
 		$transports = [];
 
-		foreach (\array_keys($this->transports->getProvidedServices()) as $key)
+		foreach (array_keys($this->transports->getProvidedServices()) as $key)
 		{
 			// the container contains every service twice: once with the name of the transport and once with
 			// name "messenger.transport.$name". We only use the ones without the prefix.
-			if (\str_starts_with($key, "messenger.transport."))
+			if (str_starts_with($key, "messenger.transport."))
 			{
 				continue;
 			}
@@ -61,7 +60,6 @@ final readonly class TransportsHelper
 		return $transports;
 	}
 
-
 	public function getTransport (string $queueName) : TransportInterface
 	{
 		try
@@ -71,7 +69,7 @@ final readonly class TransportsHelper
 		catch (ServiceNotFoundException $exception)
 		{
 			throw new InvalidMessageTransportException(
-				message: \sprintf(
+				message: sprintf(
 					"No transport found with queue name '%s'",
 					$queueName,
 				),
@@ -80,7 +78,6 @@ final readonly class TransportsHelper
 		}
 	}
 
-
 	/**
 	 * Returns all registered transport keys
 	 */
@@ -88,11 +85,11 @@ final readonly class TransportsHelper
 	{
 		$registered = [];
 
-		foreach (\array_keys($this->transports->getProvidedServices()) as $queueName)
+		foreach (array_keys($this->transports->getProvidedServices()) as $queueName)
 		{
 			// The container contains every service twice: once with the queue name and once with
 			// name "messenger.transport.$name". We only use the ones without the prefix.
-			if (\str_starts_with($queueName, "messenger.transport."))
+			if (str_starts_with($queueName, "messenger.transport."))
 			{
 				continue;
 			}

@@ -10,9 +10,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Torr\Cli\Console\Style\TorrStyle;
 use Torr\TaskManager\Exception\Registry\UnknownTaskKeyException;
 use Torr\TaskManager\Manager\TaskManager;
-use Torr\TaskManager\Transport\TransportsHelper;
 use Torr\TaskManager\Registry\TaskRegistry;
 use Torr\TaskManager\Task\Task;
+use Torr\TaskManager\Transport\TransportsHelper;
 
 #[AsCommand("task-manager:queue")]
 final class QueueTasksCommand extends Command
