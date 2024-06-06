@@ -6,6 +6,8 @@ services:
     Torr\TaskManager\:
         resource: ../src/*
         exclude:
+            - ../src/Entity/*
+            - ../src/Event/*
             - ../src/Exception/*
             - ../src/Task/*
             - ../src/TaskManagerBundle.php
