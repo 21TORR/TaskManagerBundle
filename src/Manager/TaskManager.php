@@ -2,26 +2,21 @@
 
 namespace Torr\TaskManager\Manager;
 
-use Psr\Container\ContainerExceptionInterface;
-use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Transport\Receiver\ListableReceiverInterface;
 use Symfony\Component\Messenger\Transport\Sync\SyncTransport;
-use Symfony\Component\Messenger\Transport\TransportInterface;
-use Torr\TaskManager\Config\BundleConfig;
-use Torr\TaskManager\Exception\Manager\InvalidMessageTransportException;
+use Torr\TaskManager\Exception\Transport\InvalidMessageTransportException;
 use Torr\TaskManager\Task\Task;
+use Torr\TaskManager\Transport\TransportsHelper;
 
 final readonly class TaskManager
 {
 	/**
 	 */
 	public function __construct (
-		/** @var ServiceLocator<TransportInterface> */
-		private ServiceLocator $receivers,
+		private TransportsHelper $transportsHelper,
 		private MessageBusInterface $messageBus,
-		private BundleConfig $bundleConfig,
 	) {}
 
 	/**
@@ -53,7 +48,7 @@ final readonly class TaskManager
 			return false;
 		}
 
-		foreach ($this->getAllQueues() as $queueName)
+		foreach ($this->transportsHelper->getOrderedQueueNames() as $queueName)
 		{
 			foreach ($this->fetchTasksInQueue($queueName) as $envelope)
 			{
@@ -76,50 +71,22 @@ final readonly class TaskManager
 	 */
 	public function fetchTasksInQueue (string $queueName) : iterable
 	{
-		try
+		$receiver = $this->transportsHelper->getTransport($queueName);
+
+		// skip, as sync transports can't queue messages like regular transports
+		if ($receiver instanceof SyncTransport)
 		{
-			$receiver = $this->receivers->get($queueName);
-
-			// skip, as sync transports can't queue messages like regular transports
-			if ($receiver instanceof SyncTransport)
-			{
-				return [];
-			}
-
-			if (!$receiver instanceof ListableReceiverInterface)
-			{
-				throw new InvalidMessageTransportException(sprintf(
-					"Transport for queue '%s' must implement ListableReceiverInterface",
-					$queueName,
-				));
-			}
-
-			return $receiver->all();
+			return [];
 		}
-		catch (ContainerExceptionInterface $exception)
+
+		if (!$receiver instanceof ListableReceiverInterface)
 		{
 			throw new InvalidMessageTransportException(sprintf(
-				"Could not fetch transport: %s",
-				$exception->getMessage(),
-			), previous: $exception);
-		}
-	}
-
-	/**
-	 * Returns all queues
-	 *
-	 * @return string[]
-	 */
-	public function getAllQueues () : array
-	{
-		if (!empty($this->bundleConfig->sortedQueues))
-		{
-			return $this->bundleConfig->sortedQueues;
+				"Transport for queue '%s' must implement ListableReceiverInterface",
+				$queueName,
+			));
 		}
 
-		return array_filter(
-			array_keys($this->receivers->getProvidedServices()),
-			fn (string $serviceId) => !str_starts_with($serviceId, "messenger.transport.") && !\in_array($serviceId, $this->bundleConfig->failureTransports, true),
-		);
+		return $receiver->all();
 	}
 }

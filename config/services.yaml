@@ -12,5 +12,5 @@ services:
             - ../src/Task/*
             - ../src/TaskManagerBundle.php
 
-    Torr\TaskManager\Manager\TaskManager:
-        $receivers: '@messenger.receiver_locator'
+    Torr\TaskManager\Transport\TransportsHelper:
+        $transports: '@messenger.receiver_locator'
