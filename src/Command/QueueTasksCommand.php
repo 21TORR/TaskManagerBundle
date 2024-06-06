@@ -11,8 +11,8 @@ use Torr\Cli\Console\Style\TorrStyle;
 use Torr\TaskManager\Exception\Registry\UnknownTaskKeyException;
 use Torr\TaskManager\Manager\TaskManager;
 use Torr\TaskManager\Receiver\ReceiverHelper;
-use Torr\TaskManager\Registry\Data\Task;
 use Torr\TaskManager\Registry\TaskRegistry;
+use Torr\TaskManager\Task\Task;
 
 #[AsCommand("task-manager:queue")]
 final class QueueTasksCommand extends Command
@@ -58,11 +58,11 @@ final class QueueTasksCommand extends Command
 		catch (UnknownTaskKeyException $exception)
 		{
 			$io->error($exception->getMessage());
+
 			return self::FAILURE;
 		}
 
-
-		$io->comment(\sprintf(
+		$io->comment(sprintf(
 			"Queuing <fg=magenta>%d</> task%s",
 			\count($tasksToQueue),
 			1 !== \count($tasksToQueue) ? "s" : "",
@@ -70,14 +70,15 @@ final class QueueTasksCommand extends Command
 
 		foreach ($tasksToQueue as $task)
 		{
-			$io->writeln(\sprintf(
+			$io->writeln(sprintf(
 				"• Queuing task %s",
 				$this->formatTaskLabel($task),
 			));
-			$this->taskManager->enqueue($task->task);
+			$this->taskManager->enqueue($task);
 		}
 
 		$io->success("All done.");
+
 		return self::SUCCESS;
 	}
 
@@ -119,7 +120,7 @@ final class QueueTasksCommand extends Command
 
 		foreach ($selectedOptions as $option)
 		{
-			$index = \array_search($option, $choices, true);
+			$index = array_search($option, $choices, true);
 			\assert(\is_int($index));
 
 			$result[] = $flatTasks[$index];
@@ -140,7 +141,7 @@ final class QueueTasksCommand extends Command
 		foreach ($keys as $taskKey)
 		{
 			$result[] = $this->taskRegistry->getTaskByKey($taskKey)
-				?? throw new UnknownTaskKeyException(\sprintf(
+				?? throw new UnknownTaskKeyException(sprintf(
 					"Unknown task key '%s'",
 					$taskKey,
 				));
@@ -154,16 +155,18 @@ final class QueueTasksCommand extends Command
 	 */
 	private function formatTaskLabel (Task $task) : string
 	{
-		if (null !== $task->group)
+		$metaData = $task->getMetaData();
+
+		if (null !== $metaData->group)
 		{
-			return \sprintf(
+			return sprintf(
 				"<fg=blue>%s</>: %s (<fg=yellow>%s</>)",
-				$task->group,
-				$task->label,
-				$task->key,
+				$metaData->group,
+				$metaData->label,
+				$metaData->getKey(),
 			);
 		}
 
-		return $task->label;
+		return $metaData->label;
 	}
 }

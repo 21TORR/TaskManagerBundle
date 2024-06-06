@@ -11,77 +11,63 @@ use Symfony\Component\Messenger\Transport\Sync\SyncTransport;
 use Symfony\Component\Messenger\Transport\TransportInterface;
 use Torr\TaskManager\Config\BundleConfig;
 use Torr\TaskManager\Exception\Manager\InvalidMessageTransportException;
-use Torr\TaskManager\Message\UniqueMessageInterface;
-use Torr\TaskManager\Stamp\UniqueJobStamp;
+use Torr\TaskManager\Task\Task;
 
-final class TaskManager
+final readonly class TaskManager
 {
+	/**
+	 */
 	public function __construct (
 		/** @var ServiceLocator<TransportInterface> */
-		private readonly ServiceLocator $receivers,
-		private readonly MessageBusInterface $messageBus,
-		private readonly BundleConfig $bundleConfig,
+		private ServiceLocator $receivers,
+		private MessageBusInterface $messageBus,
+		private BundleConfig $bundleConfig,
 	) {}
-
 
 	/**
 	 * Enqueues a task. You can give the job a unique id, so that only a single task with this id can be enqueued at the same time.
 	 *
 	 * @return bool whether the message was added. If this is false, an identical job is already queued.
 	 */
-	public function enqueue (
-		object $message,
-		?string $jobId = null,
-	) : bool
+	public function enqueue (Task $task) : bool
 	{
-		if (null === $jobId)
-		{
-			$jobId = $this->fetchJobIdFromMessage($message);
-		}
-
-		if (null === $jobId)
-		{
-			$this->messageBus->dispatch($message);
-			return true;
-		}
-
-		if (null !== $this->findQueuedMessageByUniqueJobId($jobId))
+		// if we find a message with the same unique task id, we don't queue it again
+		if ($this->isTaskWithSameTaskIdAlreadyQueued($task->getMetaData()->uniqueTaskId))
 		{
 			return false;
 		}
 
-		$envelope = $message instanceof Envelope
-			? $message
-			: new Envelope($message);
+		$this->messageBus->dispatch($task);
 
-		$envelope = $envelope->with(new UniqueJobStamp($jobId));
-		$this->messageBus->dispatch($envelope);
 		return true;
-
 	}
-
 
 	/**
 	 * Finds a queued message with the given job id
 	 */
-	private function findQueuedMessageByUniqueJobId (string $jobId) : ?Envelope
+	private function isTaskWithSameTaskIdAlreadyQueued (?string $uniqueTaskId) : bool
 	{
+		// no task id, so this task is not deduplicated. No need to check anything, just enqueue it.
+		if (null === $uniqueTaskId)
+		{
+			return false;
+		}
+
 		foreach ($this->getAllQueues() as $queueName)
 		{
 			foreach ($this->fetchTasksInQueue($queueName) as $envelope)
 			{
-				$stamp = $envelope->last(UniqueJobStamp::class);
+				$message = $envelope->getMessage();
 
-				if (null !== $stamp && $stamp->jobId === $jobId)
+				if ($message instanceof Task && $message->getMetaData()->uniqueTaskId === $uniqueTaskId)
 				{
-					return $envelope;
+					return true;
 				}
 			}
 		}
 
-		return null;
+		return false;
 	}
-
 
 	/**
 	 * Fetches all tasks for the given priority
@@ -102,7 +88,7 @@ final class TaskManager
 
 			if (!$receiver instanceof ListableReceiverInterface)
 			{
-				throw new InvalidMessageTransportException(\sprintf(
+				throw new InvalidMessageTransportException(sprintf(
 					"Transport for queue '%s' must implement ListableReceiverInterface",
 					$queueName,
 				));
@@ -112,13 +98,12 @@ final class TaskManager
 		}
 		catch (ContainerExceptionInterface $exception)
 		{
-			throw new InvalidMessageTransportException(\sprintf(
+			throw new InvalidMessageTransportException(sprintf(
 				"Could not fetch transport: %s",
 				$exception->getMessage(),
 			), previous: $exception);
 		}
 	}
-
 
 	/**
 	 * Returns all queues
@@ -132,28 +117,9 @@ final class TaskManager
 			return $this->bundleConfig->sortedQueues;
 		}
 
-		return \array_filter(
-			\array_keys($this->receivers->getProvidedServices()),
-			fn (string $serviceId) => !\str_starts_with($serviceId, "messenger.transport.") && !\in_array($serviceId, $this->bundleConfig->failureTransports, true),
+		return array_filter(
+			array_keys($this->receivers->getProvidedServices()),
+			fn (string $serviceId) => !str_starts_with($serviceId, "messenger.transport.") && !\in_array($serviceId, $this->bundleConfig->failureTransports, true),
 		);
-	}
-
-	/**
-	 *
-	 */
-	private function fetchJobIdFromMessage (object $message) : ?string
-	{
-		// unwrap the envelope, as the job id is attached to the message
-		if ($message instanceof Envelope)
-		{
-			$message = $message->getMessage();
-		}
-
-		if ($message instanceof UniqueMessageInterface)
-		{
-			return $message->getJobId();
-		}
-
-		return null;
 	}
 }

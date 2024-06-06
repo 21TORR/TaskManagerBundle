@@ -43,5 +43,4 @@ final class TaskManagerBundle extends Bundle
 	{
 		return \dirname(__DIR__);
 	}
-
 }
