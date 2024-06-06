@@ -51,6 +51,9 @@
 		"bamarni-bin": {
 			"bin-links": false,
 			"forward-command": true
+		},
+		"branch-alias": {
+			"2.x-dev": "2.99.x-dev"
 		}
 	},
 	"scripts": {
