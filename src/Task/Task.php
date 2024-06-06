@@ -19,7 +19,10 @@ abstract readonly class Task
 	}
 
 	/**
-	 * Defines the metadata for this task
+	 * Defines the metadata for this task.
+	 *
+	 * It is important that this data is generated on the fly, so that we can change the label for already
+	 * serialized messages as well.
 	 */
 	abstract public function getMetaData () : TaskMetaData;
 }
