@@ -11,64 +11,26 @@ use Torr\TaskManager\Task\Task;
  */
 final class TaskRegistry
 {
-	/** @var array<string, Task[]>|null */
-	private ?array $tasks = null;
-
 	/** @var array<string, Task>|null */
-	private ?array $keyMap = null;
+	private ?array $tasks = null;
 
 	public function __construct (
 		private readonly EventDispatcherInterface $dispatcher,
 	) {}
 
 	/**
-	 * @return array<string, Task[]>
-	 */
-	public function getGroupedTasks () : array
-	{
-		return $this->tasks ??= $this->fetchGroupedTasks();
-	}
-
-	/**
-	 * @return Task[]
-	 */
-	public function getAllTasks () : array
-	{
-		// be sure to fetch tasks
-		$this->fetchGroupedTasks();
-		\assert(null !== $this->keyMap);
-
-		return array_values($this->keyMap);
-	}
-
-	/**
-	 * Returns a task by its key
-	 */
-	public function getTaskByKey (string $key) : ?Task
-	{
-		// be sure to fetch tasks
-		$this->getGroupedTasks();
-		\assert(null !== $this->keyMap);
-
-		return $this->keyMap[$key] ?? null;
-	}
-
-	/**
 	 * Returns a list of all tasks, grouped by group label.
 	 *
 	 * @return array<string, Task[]>
+	 *
+	 * @api
 	 */
-	private function fetchGroupedTasks () : array
+	public function getGroupedTasks () : array
 	{
-		$event = new RegisterTasksEvent();
-		$this->dispatcher->dispatch($event);
-		$tasks = $event->getTasks();
-
-		$this->keyMap = [];
 		$grouped = [];
 		$ungrouped = [];
 
-		foreach ($tasks as $task)
+		foreach ($this->fetchAllTasks() as $task)
 		{
 			$definition = $task->getMetaData();
 
@@ -80,8 +42,6 @@ final class TaskRegistry
 			{
 				$ungrouped[] = $task;
 			}
-
-			$this->keyMap[$definition->getKey()] = $task;
 		}
 
 		// sort groups by group label
@@ -93,15 +53,54 @@ final class TaskRegistry
 			$grouped["(other)"] = $ungrouped;
 		}
 
-		// sort every group
-		foreach ($grouped as &$entries)
+		return $grouped;
+	}
+
+	/**
+	 * @return Task[]
+	 *
+	 * @api
+	 */
+	public function getAllTasks () : array
+	{
+		return array_values($this->fetchAllTasks());
+	}
+
+	/**
+	 * Returns a task by its key
+	 *
+	 * @api
+	 */
+	public function getTaskByKey (string $key) : ?Task
+	{
+		return $this->fetchAllTasks()[$key] ?? null;
+	}
+
+	/**
+	 * @return array<string, Task>
+	 */
+	private function fetchAllTasks () : array
+	{
+		if (null !== $this->tasks)
 		{
-			usort(
-				$entries,
-				static fn (Task $left, Task $right) => strnatcasecmp($left->getMetaData()->label, $right->getMetaData()->label),
-			);
+			return $this->tasks;
 		}
 
-		return $grouped;
+		$event = new RegisterTasksEvent();
+		$this->dispatcher->dispatch($event);
+		$this->tasks = [];
+
+		foreach ($event->getTasks() as $task)
+		{
+			$this->tasks[$task->getMetaData()->getKey()] = $task;
+		}
+
+		// sort tasks globally by name
+		uasort(
+			$this->tasks,
+			static fn (Task $left, Task $right) => strnatcasecmp($left->getMetaData()->label, $right->getMetaData()->label),
+		);
+
+		return $this->tasks;
 	}
 }
