@@ -10,6 +10,8 @@ use Torr\TaskManager\Config\BundleConfig;
 use Torr\TaskManager\Exception\Transport\InvalidMessageTransportException;
 
 /**
+ * Helper to interact with transports of the Symfony messenger component.
+ *
  * @internal
  */
 final readonly class TransportsHelper
