@@ -137,8 +137,15 @@ class TaskLog
 	 */
 	public function getEnvelope () : ?Envelope
 	{
-		return null !== $this->envelope
-			? unserialize($this->envelope)
+		if (null === $this->envelope)
+		{
+			return null;
+		}
+
+		$envelope = unserialize($this->envelope);
+
+		return $envelope instanceof Envelope
+			? $envelope
 			: null;
 	}
 
