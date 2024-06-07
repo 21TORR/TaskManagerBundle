@@ -4,6 +4,7 @@ namespace Torr\TaskManager\Manager;
 
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Messenger\Stamp\StampInterface;
 use Symfony\Component\Messenger\Transport\Receiver\ListableReceiverInterface;
 use Symfony\Component\Messenger\Transport\Sync\SyncTransport;
 use Torr\TaskManager\Exception\Transport\InvalidMessageTransportException;
@@ -22,9 +23,11 @@ final readonly class TaskManager
 	/**
 	 * Enqueues a task. You can give the job a unique id, so that only a single task with this id can be enqueued at the same time.
 	 *
+	 * @param StampInterface[] $stamps
+	 *
 	 * @return bool whether the message was added. If this is false, an identical job is already queued.
 	 */
-	public function enqueue (Task $task) : bool
+	public function enqueue (Task $task, array $stamps = []) : bool
 	{
 		// if we find a message with the same unique task id, we don't queue it again
 		if ($this->isTaskWithSameTaskIdAlreadyQueued($task->getMetaData()->uniqueTaskId))
@@ -32,7 +35,10 @@ final readonly class TaskManager
 			return false;
 		}
 
-		$this->messageBus->dispatch($task);
+		$envelope = new Envelope($task);
+		$envelope->with(...$stamps);
+
+		$this->messageBus->dispatch($envelope);
 
 		return true;
 	}
