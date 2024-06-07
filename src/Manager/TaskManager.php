@@ -95,4 +95,23 @@ final readonly class TaskManager
 
 		return $receiver->all();
 	}
+
+	/**
+	 * Returns the queue names, ordered by descending priority.
+	 *
+	 * @return string[]
+	 */
+	public function getAllQueueNames () : array
+	{
+		return $this->transportsHelper->getOrderedQueueNames();
+	}
+
+	/**
+	 * Returns the system has any sync transport enabled.
+	 * So you need to assume that any task might be worked on synchronously.
+	 */
+	public function hasSyncTransport () : bool
+	{
+		return $this->transportsHelper->hasSyncTransport();
+	}
 }
