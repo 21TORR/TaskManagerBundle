@@ -2,10 +2,11 @@
 =====
 
 * (bc) **This bundle now requires that all your messages extend from the `Task` base class.** 
-* (bc) Change signature of `TaskManager::enqueue()` to only accept tasks.
+* (bc) Change signature of `TaskManager::enqueue()` to only accept tasks and a list of stamps.
 * (bc) Remove `RegisterTasksEvent::registerTask()` and replace it with `RegisterTasksEvent::register(Task $task)`.
 * (feature) Add `TaskDirector` and `RunDirector` to better integrate and log your task runs.
 * (feature) Add native `Task` event that encapsulates commonly used logic.
+* (feature) Add `TaskLog` to store already finished tasks.
 
 
 1.3.1
