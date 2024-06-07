@@ -39,7 +39,7 @@ final class TaskLogModel
 		}
 
 		// if it isn't created yet, create a new one
-		$log = new TaskLog($task->ulid);
+		$log = new TaskLog($task);
 		$this->entityManager->persist($log);
 
 		return $log;
