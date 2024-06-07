@@ -6,7 +6,9 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Messenger\Envelope;
 use Torr\TaskManager\Exception\Log\InvalidLogActionException;
+use Torr\TaskManager\Task\Task;
 
 use function Symfony\Component\Clock\now;
 
@@ -33,6 +35,12 @@ class TaskLog
 	/**
 	 *
 	 */
+	#[ORM\Column(type: Types::BLOB, nullable: true)]
+	private ?string $envelope = null;
+
+	/**
+	 *
+	 */
 	#[ORM\Column(name: "time_queued", type: Types::DATETIMETZ_IMMUTABLE)]
 	private \DateTimeImmutable $timeQueued;
 
@@ -42,10 +50,10 @@ class TaskLog
 	private Collection $runs;
 
 	public function __construct (
-		string $taskId,
+		Task $task,
 	)
 	{
-		$this->taskId = $taskId;
+		$this->taskId = $task->ulid;
 		$this->runs = new ArrayCollection();
 		$this->timeQueued = now();
 	}
@@ -123,5 +131,23 @@ class TaskLog
 		$this->runs->add($run);
 
 		return $run;
+	}
+
+	/**
+	 */
+	public function getEnvelope () : ?Envelope
+	{
+		return null !== $this->envelope
+			? unserialize($this->envelope)
+			: null;
+	}
+
+	/**
+	 */
+	public function setEnvelope (?Envelope $envelope) : void
+	{
+		$this->envelope = null !== $envelope
+			? serialize($envelope)
+			: null;
 	}
 }
