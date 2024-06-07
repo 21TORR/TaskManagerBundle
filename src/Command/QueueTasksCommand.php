@@ -10,9 +10,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Torr\Cli\Console\Style\TorrStyle;
 use Torr\TaskManager\Exception\Registry\UnknownTaskKeyException;
 use Torr\TaskManager\Manager\TaskManager;
-use Torr\TaskManager\Receiver\ReceiverHelper;
 use Torr\TaskManager\Registry\TaskRegistry;
 use Torr\TaskManager\Task\Task;
+use Torr\TaskManager\Transport\TransportsHelper;
 
 #[AsCommand("task-manager:queue")]
 final class QueueTasksCommand extends Command
@@ -22,7 +22,7 @@ final class QueueTasksCommand extends Command
 	public function __construct (
 		private readonly TaskRegistry $taskRegistry,
 		private readonly TaskManager $taskManager,
-		private readonly ReceiverHelper $receiverHelper,
+		private readonly TransportsHelper $receiverHelper,
 	)
 	{
 		parent::__construct();
