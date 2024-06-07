@@ -26,6 +26,8 @@ final readonly class TaskManager
 	 * @param StampInterface[] $stamps
 	 *
 	 * @return bool whether the message was added. If this is false, an identical job is already queued.
+	 *
+	 * @api
 	 */
 	public function enqueue (Task $task, array $stamps = []) : bool
 	{
@@ -74,6 +76,8 @@ final readonly class TaskManager
 	 * Fetches all tasks for the given priority
 	 *
 	 * @return iterable<Envelope>
+	 *
+	 * @api
 	 */
 	public function fetchTasksInQueue (string $queueName) : iterable
 	{
@@ -100,6 +104,8 @@ final readonly class TaskManager
 	 * Returns the queue names, ordered by descending priority.
 	 *
 	 * @return string[]
+	 *
+	 * @api
 	 */
 	public function getAllQueueNames () : array
 	{
@@ -109,6 +115,8 @@ final readonly class TaskManager
 	/**
 	 * Returns the system has any sync transport enabled.
 	 * So you need to assume that any task might be worked on synchronously.
+	 *
+	 * @api
 	 */
 	public function hasSyncTransport () : bool
 	{
