@@ -4,7 +4,7 @@ namespace Torr\TaskManager\Registry;
 
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Torr\TaskManager\Event\RegisterTasksEvent;
-use Torr\TaskManager\Registry\Data\Task;
+use Torr\TaskManager\Task\Task;
 
 /**
  * Contains all tasks that are automatically configured to be runnable.
@@ -13,13 +13,13 @@ final class TaskRegistry
 {
 	/** @var array<string, Task[]>|null */
 	private ?array $tasks = null;
+
 	/** @var array<string, Task>|null */
 	private ?array $keyMap = null;
 
 	public function __construct (
 		private readonly EventDispatcherInterface $dispatcher,
 	) {}
-
 
 	/**
 	 * @return array<string, Task[]>
@@ -28,7 +28,6 @@ final class TaskRegistry
 	{
 		return $this->tasks ??= $this->fetchGroupedTasks();
 	}
-
 
 	/**
 	 * Returns a task by its key
@@ -40,7 +39,6 @@ final class TaskRegistry
 
 		return $this->keyMap[$key] ?? null;
 	}
-
 
 	/**
 	 * Returns a list of all tasks, grouped by group label.
@@ -59,20 +57,22 @@ final class TaskRegistry
 
 		foreach ($tasks as $task)
 		{
-			if (null !== $task->group)
+			$definition = $task->getMetaData();
+
+			if (null !== $definition->group)
 			{
-				$grouped[$task->group][] = $task;
+				$grouped[$definition->group][] = $task;
 			}
 			else
 			{
 				$ungrouped[] = $task;
 			}
 
-			$this->keyMap[$task->key] = $task;
+			$this->keyMap[$definition->getKey()] = $task;
 		}
 
 		// sort groups by group label
-		\uksort($grouped, "strnatcasecmp");
+		uksort($grouped, "strnatcasecmp");
 
 		if (!empty($ungrouped))
 		{
@@ -83,9 +83,9 @@ final class TaskRegistry
 		// sort every group
 		foreach ($grouped as &$entries)
 		{
-			\usort(
+			usort(
 				$entries,
-				static fn (Task $left, Task $right) => \strnatcasecmp($left->label, $right->label),
+				static fn (Task $left, Task $right) => strnatcasecmp($left->getMetaData()->label, $right->getMetaData()->label),
 			);
 		}
 

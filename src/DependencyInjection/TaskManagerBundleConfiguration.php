@@ -27,5 +27,4 @@ final class TaskManagerBundleConfiguration implements ConfigurationInterface
 
 		return $treeBuilder;
 	}
-
 }

@@ -2,14 +2,14 @@
 
 namespace Torr\TaskManager\Config;
 
-final class BundleConfig
+final readonly class BundleConfig
 {
 	/**
 	 */
 	public function __construct (
 		/** @var string[] */
-		public readonly array $sortedQueues,
+		public array $sortedQueues,
 		/** @var string[] */
-		public readonly array $failureTransports = [],
+		public array $failureTransports = [],
 	) {}
 }

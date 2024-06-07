@@ -9,14 +9,14 @@ use Symfony\Component\Messenger\Transport\TransportInterface;
 /**
  * @internal
  */
-final class ReceiverHelper
+final readonly class ReceiverHelper
 {
 	/**
 	 */
 	public function __construct (
 		/** @var iterable<TransportInterface> */
 		#[AutowireIterator(tag: "messenger.receiver")]
-		private readonly iterable $transports,
+		private iterable $transports,
 	) {}
 
 	/**

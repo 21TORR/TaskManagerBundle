@@ -55,6 +55,7 @@ final class ListTasksCommand extends Command
 			foreach ($tasks as $task)
 			{
 				$row = [];
+				$metaData = $task->getMetaData();
 
 				if ($first)
 				{
@@ -67,16 +68,15 @@ final class ListTasksCommand extends Command
 					$first = false;
 				}
 
-				$row[] = \sprintf(
+				$row[] = sprintf(
 					"<fg=yellow>%s</>",
-					$task->key,
+					$metaData->getKey(),
 				);
-				$row[] = $task->label;
-				$row[] = \get_class($task->task);
+				$row[] = $metaData->label;
+				$row[] = $task::class;
 				$rows[] = $row;
 			}
 		}
-
 
 		$io->table(
 			headers: [
@@ -85,7 +85,6 @@ final class ListTasksCommand extends Command
 				"Name",
 				"Task Class",
 			],
-			// @phpstan-ignore-next-line This is fine and the type was fixed in newer versions of the CLI bundle
 			rows: $rows,
 		);
 
