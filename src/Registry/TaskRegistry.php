@@ -30,12 +30,25 @@ final class TaskRegistry
 	}
 
 	/**
+	 * @return Task[]
+	 */
+	public function getAllTasks () : array
+	{
+		// be sure to fetch tasks
+		$this->fetchGroupedTasks();
+		\assert(null !== $this->keyMap);
+
+		return array_values($this->keyMap);
+	}
+
+	/**
 	 * Returns a task by its key
 	 */
 	public function getTaskByKey (string $key) : ?Task
 	{
 		// be sure to fetch tasks
 		$this->getGroupedTasks();
+		\assert(null !== $this->keyMap);
 
 		return $this->keyMap[$key] ?? null;
 	}
