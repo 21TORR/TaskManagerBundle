@@ -31,14 +31,14 @@ class TaskRun
 	/**
 	 *
 	 */
-	#[ORM\Column(name: "time_started", type: Types::DATETIMETZ_IMMUTABLE)]
+	#[ORM\Column(type: Types::DATETIMETZ_IMMUTABLE)]
 	private \DateTimeImmutable $timeStarted;
 
 	/**
 	 *
 	 */
-	#[ORM\Column(name: "time_finished", type: Types::DATETIMETZ_IMMUTABLE, nullable: true)]
-	private ?\DateTimeImmutable $timeFinished = null;
+	#[ORM\Column(type: Types::FLOAT, nullable: true)]
+	private ?float $duration = null;
 
 	/**
 	 */
@@ -54,6 +54,11 @@ class TaskRun
 	 */
 	#[ORM\Column(type: Types::TEXT, nullable: true)]
 	private ?string $output = null;
+
+	/**
+	 *
+	 */
+	private ?float $start = null;
 	// endregion
 
 	/**
@@ -62,6 +67,7 @@ class TaskRun
 	{
 		$this->taskLog = $taskLog;
 		$this->timeStarted = now();
+		$this->start = \hrtime(true);
 	}
 
 	// region Accessors
@@ -77,13 +83,6 @@ class TaskRun
 	public function getTimeStarted () : \DateTimeImmutable
 	{
 		return $this->timeStarted;
-	}
-
-	/**
-	 */
-	public function getTimeFinished () : ?\DateTimeImmutable
-	{
-		return $this->timeFinished;
 	}
 
 	/**
@@ -105,8 +104,17 @@ class TaskRun
 	 */
 	public function isFinished () : bool
 	{
-		return null !== $this->timeFinished;
+		return null !== $this->duration;
 	}
+
+	/**
+	 * The duration of the run in nanoseconds (if the task is finished already)
+	 */
+	public function getDuration () : ?float
+	{
+		return $this->duration;
+	}
+
 
 	/**
 	 * Whether the task was finished properly or was automatically finished.
@@ -121,15 +129,11 @@ class TaskRun
 	 */
 	public function finish (bool $successful, ?string $output) : void
 	{
-		if ($this->isFinished())
-		{
-			throw new InvalidLogActionException("Can't finish task run #{$this->id} as it is already finished.");
-		}
-
-		$this->finishedProperly = true;
-		$this->successful = $successful;
-		$this->output = $output;
-		$this->timeFinished = now();
+		$this->finalizeRun(
+			successful: $successful,
+			finishedProperly: true,
+			output: $output,
+		);
 	}
 
 	/**
@@ -137,14 +141,36 @@ class TaskRun
 	 */
 	public function abort (bool $successful, ?string $output = null) : void
 	{
+		$this->finalizeRun(
+			successful: $successful,
+			finishedProperly: false,
+			output: $output,
+		);
+	}
+
+
+	/**
+	 * Finalizes the run
+	 */
+	private function finalizeRun (
+		bool $successful,
+		bool $finishedProperly,
+		?string $output = null,
+	) : void
+	{
 		if ($this->isFinished())
 		{
-			throw new InvalidLogActionException("Can't abort task run #{$this->id} as it is already finished.");
+			throw new InvalidLogActionException("Can't finalize task run #{$this->id} as it is already finished.");
 		}
 
-		$this->finishedProperly = false;
+		if (null === $this->start)
+		{
+			throw new InvalidLogActionException("Can't finalize a task that wasn't started in this run.");
+		}
+
 		$this->successful = $successful;
+		$this->finishedProperly = $finishedProperly;
 		$this->output = $output;
-		$this->timeFinished = now();
+		$this->duration = \hrtime(true) - $this->start;
 	}
 }
