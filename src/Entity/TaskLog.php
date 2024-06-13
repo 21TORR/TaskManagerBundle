@@ -33,10 +33,10 @@ class TaskLog
 	private string $taskId;
 
 	/**
-	 *
+	 * @var resource|string|null
 	 */
 	#[ORM\Column(type: Types::BLOB, nullable: true)]
-	private ?string $envelope = null;
+	private mixed $envelope = null;
 
 	/**
 	 *
@@ -142,7 +142,11 @@ class TaskLog
 			return null;
 		}
 
-		$envelope = unserialize($this->envelope);
+		$data = \is_resource($this->envelope)
+			? \stream_get_contents($this->envelope)
+			: $this->envelope;
+
+		$envelope = unserialize($data);
 
 		return $envelope instanceof Envelope
 			? $envelope
@@ -156,5 +160,53 @@ class TaskLog
 		$this->envelope = null !== $envelope
 			? serialize($envelope)
 			: null;
+	}
+
+	/**
+	 * Returns a label of the task
+	 */
+	public function getTaskLabel () : ?string
+	{
+		$envelope = $this->getEnvelope();
+
+		if (null === $envelope)
+		{
+			return null;
+		}
+
+		$task = $envelope->getMessage();
+		$label = $task instanceof Task
+			? $task->getMetaData()->label
+			: \get_debug_type($task);
+
+		return "__PHP_Incomplete_Class" !== $label
+			? $label
+			: null;
+	}
+
+	/**
+	 * @return bool|null whether the task succeeded/failed or null, if it hasn't run yet
+	 */
+	public function getStatus () : ?bool
+	{
+		$result = null;
+
+		foreach ($this->runs as $run)
+		{
+			if (!$run->isFinished())
+			{
+				continue;
+			}
+
+			if ($run->isFinishedSuccessfully())
+			{
+				return true;
+			}
+
+			// we have a run that is finished and if we don't early exit, they apparently failed
+			$result = false;
+		}
+
+		return $result;
 	}
 }
