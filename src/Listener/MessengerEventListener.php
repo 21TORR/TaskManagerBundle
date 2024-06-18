@@ -9,6 +9,7 @@ use Symfony\Component\Messenger\Event\WorkerMessageFailedEvent;
 use Symfony\Component\Messenger\Event\WorkerMessageHandledEvent;
 use Torr\TaskManager\Entity\TaskLog;
 use Torr\TaskManager\Model\TaskLogModel;
+use Torr\TaskManager\Normalizer\TaskDetailsNormalizer;
 use Torr\TaskManager\Task\Task;
 
 /**
@@ -18,6 +19,7 @@ final readonly class MessengerEventListener
 {
 	public function __construct (
 		private TaskLogModel $logModel,
+		private TaskDetailsNormalizer $detailsNormalizer,
 	) {}
 
 	/**
@@ -32,7 +34,7 @@ final readonly class MessengerEventListener
 		if (null !== $taskLog)
 		{
 			// update envelope with current version
-			$taskLog->setEnvelope($event->getEnvelope());
+			$taskLog->setTaskDetails($this->detailsNormalizer->normalizeTaskDetails($event->getEnvelope()));
 
 			$this->logModel->flush();
 		}
@@ -52,7 +54,7 @@ final readonly class MessengerEventListener
 		}
 
 		// update envelope with current version
-		$taskLog->setEnvelope($event->getEnvelope());
+		$taskLog->setTaskDetails($this->detailsNormalizer->normalizeTaskDetails($event->getEnvelope()));
 
 		// abort run as success. It wasn't marked as finished manually, but it succeeded nonetheless.
 		$run = $taskLog->getLastUnfinishedRun();
@@ -72,7 +74,7 @@ final readonly class MessengerEventListener
 		}
 
 		// update envelope with current version
-		$taskLog->setEnvelope($event->getEnvelope());
+		$taskLog->setTaskDetails($this->detailsNormalizer->normalizeTaskDetails($event->getEnvelope()));
 
 		// abort run as failure. It wasn't marked as finished manually and it failed.
 		$run = $taskLog->getLastUnfinishedRun();

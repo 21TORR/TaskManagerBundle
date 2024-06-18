@@ -43,7 +43,7 @@ class TaskRun
 	/**
 	 */
 	#[ORM\Column(type: Types::BOOLEAN, nullable: true)]
-	private ?bool $successful = null;
+	private ?bool $success = null;
 
 	/**
 	 */
@@ -67,7 +67,7 @@ class TaskRun
 	{
 		$this->taskLog = $taskLog;
 		$this->timeStarted = now();
-		$this->start = \hrtime(true);
+		$this->start = hrtime(true);
 	}
 
 	// region Accessors
@@ -87,10 +87,12 @@ class TaskRun
 
 	/**
 	 * Whether the task was finished successfully.
+	 *
+	 * @return bool|null Whether the task was finished successfully. Will return null if not yet finished.
 	 */
-	public function isFinishedSuccessfully () : bool
+	public function isSuccess () : ?bool
 	{
-		return true === $this->successful;
+		return $this->success;
 	}
 
 	/**
@@ -115,7 +117,6 @@ class TaskRun
 		return $this->duration;
 	}
 
-
 	/**
 	 * Whether the task was finished properly or was automatically finished.
 	 */
@@ -127,10 +128,10 @@ class TaskRun
 
 	/**
 	 */
-	public function finish (bool $successful, ?string $output) : void
+	public function finish (bool $success, ?string $output) : void
 	{
 		$this->finalizeRun(
-			successful: $successful,
+			success: $success,
 			finishedProperly: true,
 			output: $output,
 		);
@@ -139,21 +140,20 @@ class TaskRun
 	/**
 	 * Aborts the task, without finishing it properly
 	 */
-	public function abort (bool $successful, ?string $output = null) : void
+	public function abort (bool $success, ?string $output = null) : void
 	{
 		$this->finalizeRun(
-			successful: $successful,
+			success: $success,
 			finishedProperly: false,
 			output: $output,
 		);
 	}
 
-
 	/**
 	 * Finalizes the run
 	 */
 	private function finalizeRun (
-		bool $successful,
+		bool $success,
 		bool $finishedProperly,
 		?string $output = null,
 	) : void
@@ -168,9 +168,9 @@ class TaskRun
 			throw new InvalidLogActionException("Can't finalize a task that wasn't started in this run.");
 		}
 
-		$this->successful = $successful;
+		$this->success = $success;
 		$this->finishedProperly = $finishedProperly;
 		$this->output = $output;
-		$this->duration = \hrtime(true) - $this->start;
+		$this->duration = hrtime(true) - $this->start;
 	}
 }

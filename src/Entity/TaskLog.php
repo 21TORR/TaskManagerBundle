@@ -6,13 +6,20 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Messenger\Envelope;
 use Torr\TaskManager\Exception\Log\InvalidLogActionException;
 use Torr\TaskManager\Task\Task;
 
 use function Symfony\Component\Clock\now;
 
 /**
+ * @phpstan-type TaskDetails array{
+ *     "class"?: class-string|null,
+ *     "handledBy"?: string|null,
+ *     "label"?: string,
+ *     "task"?: string,
+ *     "transport"?: string|null,
+ * }
+ *
  * @final
  */
 #[ORM\Entity]
@@ -33,10 +40,12 @@ class TaskLog
 	private string $taskId;
 
 	/**
-	 * @var resource|string|null
+	 * The encoded task details
+	 *
+	 * @var TaskDetails
 	 */
-	#[ORM\Column(type: Types::BLOB, nullable: true)]
-	private mixed $envelope = null;
+	#[ORM\Column(type: Types::JSON)]
+	private array $taskDetails = [];
 
 	/**
 	 *
@@ -88,12 +97,13 @@ class TaskLog
 	}
 
 	/**
+	 * Returns whether the task was finished successfully
 	 */
-	public function isFinishedSuccessfully () : ?bool
+	public function isSuccess () : bool
 	{
 		foreach ($this->runs as $run)
 		{
-			if ($run->isFinishedSuccessfully())
+			if ($run->isSuccess())
 			{
 				return true;
 			}
@@ -122,7 +132,7 @@ class TaskLog
 	 */
 	public function startRun () : TaskRun
 	{
-		if ($this->isFinishedSuccessfully())
+		if ($this->isSuccess())
 		{
 			throw new InvalidLogActionException("Can't start a run for a task #{$this->id} that is already finished.");
 		}
@@ -134,32 +144,19 @@ class TaskLog
 	}
 
 	/**
+	 * @return TaskDetails
 	 */
-	public function getEnvelope () : ?Envelope
+	public function getTaskDetails () : array
 	{
-		if (null === $this->envelope)
-		{
-			return null;
-		}
-
-		$data = \is_resource($this->envelope)
-			? \stream_get_contents($this->envelope)
-			: $this->envelope;
-
-		$envelope = unserialize($data);
-
-		return $envelope instanceof Envelope
-			? $envelope
-			: null;
+		return $this->taskDetails;
 	}
 
 	/**
+	 * @param TaskDetails $taskDetails
 	 */
-	public function setEnvelope (?Envelope $envelope) : void
+	public function setTaskDetails (array $taskDetails) : void
 	{
-		$this->envelope = null !== $envelope
-			? serialize($envelope)
-			: null;
+		$this->taskDetails = $taskDetails;
 	}
 
 	/**
@@ -167,21 +164,7 @@ class TaskLog
 	 */
 	public function getTaskLabel () : ?string
 	{
-		$envelope = $this->getEnvelope();
-
-		if (null === $envelope)
-		{
-			return null;
-		}
-
-		$task = $envelope->getMessage();
-		$label = $task instanceof Task
-			? $task->getMetaData()->label
-			: \get_debug_type($task);
-
-		return "__PHP_Incomplete_Class" !== $label
-			? $label
-			: null;
+		return $this->getTaskDetails()["label"] ?? null;
 	}
 
 	/**
@@ -198,7 +181,7 @@ class TaskLog
 				continue;
 			}
 
-			if ($run->isFinishedSuccessfully())
+			if ($run->isSuccess())
 			{
 				return true;
 			}
@@ -208,5 +191,44 @@ class TaskLog
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Returns the total duration for all runs
+	 */
+	public function getTotalDuration () : float
+	{
+		$duration = 0;
+
+		foreach ($this->runs as $run)
+		{
+			$duration += (float) $run->getDuration();
+		}
+
+		return $duration;
+	}
+
+	/**
+	 * Returns the message handler that handled the message
+	 */
+	public function getHandledBy () : ?string
+	{
+		return $this->getTaskDetails()["handledBy"] ?? null;
+	}
+
+	/**
+	 * Returns the transport this message was handled on
+	 */
+	public function getTransport () : ?string
+	{
+		return $this->getTaskDetails()["transport"] ?? null;
+	}
+
+	/**
+	 * Returns the class of the message
+	 */
+	public function getTaskClass () : ?string
+	{
+		return $this->getTaskDetails()["class"] ?? null;
 	}
 }
