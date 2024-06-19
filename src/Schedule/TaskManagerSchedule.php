@@ -8,7 +8,7 @@ use Symfony\Component\Scheduler\Schedule;
 use Symfony\Component\Scheduler\ScheduleProviderInterface;
 use Torr\TaskManager\Log\Task\CleanOutdatedLogsTask;
 
-#[AsSchedule]
+#[AsSchedule("task_manager")]
 final readonly class TaskManagerSchedule implements ScheduleProviderInterface
 {
 	/**
