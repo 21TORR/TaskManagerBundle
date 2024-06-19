@@ -26,13 +26,19 @@ final class TransportsHelperTest extends TestCase
 		$locator = new ServiceLocator([
 			"test" => static fn () => null,
 			"app" => static fn () => null,
+			"scheduler_1" => static fn () => null,
 			"very_urgent" => static fn () => null,
 			"test2" => static fn () => null,
+			"scheduler_2" => static fn () => null,
+			"scheduler_3" => static fn () => null,
 		]);
 
 		$helper = new TransportsHelper($locator, $config);
 
 		self::assertSame([
+			"scheduler_1",
+			"scheduler_2",
+			"scheduler_3",
 			"very_urgent",
 			"app",
 			"test",

@@ -107,27 +107,53 @@ final readonly class TransportsHelper
 	 */
 	public function getOrderedQueueNames () : array
 	{
-		$registeredQueueNames = $this->getAllRegisteredQueueNames();
-		$ordered = [];
+		$indexMap = [];
 
 		foreach ($this->bundleConfig->sortedQueues as $queueName)
 		{
-			if (\array_key_exists($queueName, $registeredQueueNames))
-			{
-				$ordered[] = $queueName;
-			}
+			$indexMap[$queueName] = \count($indexMap);
 		}
 
-		foreach ($registeredQueueNames as $queueName)
-		{
-			if (
-				!\in_array($queueName, $ordered, true)
-				&& !\in_array($queueName, $this->bundleConfig->failureTransports, true)
-			)
+		$ordered = $this->getAllRegisteredQueueNames();
+		\usort(
+			$ordered,
+			function (string $queueNameLeft, string $queueNameRight) use ($indexMap) : int
 			{
-				$ordered[] = $queueName;
-			}
-		}
+				$indexLeft = $indexMap[$queueNameLeft] ?? null;
+				$indexRight = $indexMap[$queueNameRight] ?? null;
+				$leftIsScheduler = \str_starts_with($queueNameLeft, "scheduler_");
+				$rightIsScheduler = \str_starts_with($queueNameRight, "scheduler_");
+
+				// if left is a schedule, then sort to top except if right is also schedule.
+				// If both are schedules, keep the order
+				if ($leftIsScheduler)
+				{
+					return $rightIsScheduler
+						? 0
+						: -1;
+				}
+
+				// left is no schedule, so if right is one, sort it to the top
+				if ($rightIsScheduler)
+				{
+					return 1;
+				}
+
+				// if left is indexed, check if right is indexed as well. If not put left at the top,
+				// otherwise sort according to index
+				if (null !== $indexLeft)
+				{
+					return null !== $indexRight
+						? $indexLeft - $indexRight
+						: -1;
+				}
+
+				// if right is indexed, move to top, otherwise keep order
+				return null !== $indexRight
+					? 1
+					: 0;
+			},
+		);
 
 		return $ordered;
 	}
