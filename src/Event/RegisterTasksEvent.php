@@ -3,6 +3,7 @@
 namespace Torr\TaskManager\Event;
 
 use Torr\TaskManager\Exception\Registry\DuplicateTaskRegisteredException;
+use Torr\TaskManager\Registry\Task\RegisteredTask;
 use Torr\TaskManager\Task\Task;
 
 /**
@@ -14,15 +15,20 @@ use Torr\TaskManager\Task\Task;
  */
 final class RegisterTasksEvent
 {
-	/** @var array<string, Task> */
+	/** @var array<string, RegisteredTask> */
 	public array $tasks = [];
 
 	/**
 	 * Registers a task
 	 *
+	 * @param bool $public whether this task is public (= everywhere registrable) or private (= only registrable via CLI)
+	 *
 	 * @throws DuplicateTaskRegisteredException
 	 */
-	public function register (Task $task) : self
+	public function register (
+		Task $task,
+		bool $public = true,
+	) : self
 	{
 		$definition = $task->getMetaData();
 		$key = $definition->getKey();
@@ -35,23 +41,16 @@ final class RegisterTasksEvent
 			));
 		}
 
-		$this->tasks[$key] = $task;
+		$this->tasks[$key] = new RegisteredTask($task, $public);
 
 		return $this;
 	}
 
 	/**
-	 * @return list<Task>
+	 * @return list<RegisteredTask>
 	 */
 	public function getTasks () : array
 	{
-		$entries = array_values($this->tasks);
-
-		usort(
-			$entries,
-			static fn (Task $left, Task $right) => strnatcasecmp($left->getMetaData()->label, $right->getMetaData()->label),
-		);
-
-		return $entries;
+		return  array_values($this->tasks);
 	}
 }

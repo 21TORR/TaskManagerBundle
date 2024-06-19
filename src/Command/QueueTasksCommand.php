@@ -100,7 +100,7 @@ final class QueueTasksCommand extends Command
 		$flatTasks = [];
 		$choices = [];
 
-		foreach ($this->taskRegistry->getGroupedTasks() as $tasks)
+		foreach ($this->taskRegistry->getGroupedTasks(TaskRegistry::INCLUDE_PRIVATE_TASKS) as $tasks)
 		{
 			foreach ($tasks as $task)
 			{

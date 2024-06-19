@@ -11,6 +11,6 @@ final readonly class TaskIntegrationListener
 	#[AsEventListener]
 	public function onRegisterTasks (RegisterTasksEvent $event) : void
 	{
-		$event->register(new CleanOutdatedLogsTask());
+		$event->register(new CleanOutdatedLogsTask(), public: false);
 	}
 }

@@ -4,6 +4,7 @@ namespace Torr\TaskManager\Registry;
 
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Torr\TaskManager\Event\RegisterTasksEvent;
+use Torr\TaskManager\Registry\Task\RegisteredTask;
 use Torr\TaskManager\Task\Task;
 
 /**
@@ -11,7 +12,10 @@ use Torr\TaskManager\Task\Task;
  */
 final class TaskRegistry
 {
-	/** @var array<string, Task>|null */
+	public const bool ONLY_PUBLIC_TASKS = true;
+	public const bool INCLUDE_PRIVATE_TASKS = false;
+
+	/** @var array<string, RegisteredTask>|null */
 	private ?array $tasks = null;
 
 	public function __construct (
@@ -25,13 +29,23 @@ final class TaskRegistry
 	 *
 	 * @api
 	 */
-	public function getGroupedTasks () : array
+	public function getGroupedTasks (bool $onlyPublic = self::ONLY_PUBLIC_TASKS) : array
 	{
 		$grouped = [];
 		$ungrouped = [];
+		$registeredTasks = $this->fetchAllTasks();
 
-		foreach ($this->fetchAllTasks() as $task)
+		if ($onlyPublic)
 		{
+			$registeredTasks = array_filter(
+				$registeredTasks,
+				static fn (RegisteredTask $task) => $task->public,
+			);
+		}
+
+		foreach ($registeredTasks as $registeredTask)
+		{
+			$task = $registeredTask->task;
 			$definition = $task->getMetaData();
 
 			if (null !== $definition->group)
@@ -63,7 +77,14 @@ final class TaskRegistry
 	 */
 	public function getAllTasks () : array
 	{
-		return array_values($this->fetchAllTasks());
+		$tasks = [];
+
+		foreach ($this->fetchAllTasks() as $registeredTask)
+		{
+			$tasks[] = $registeredTask->task;
+		}
+
+		return $tasks;
 	}
 
 	/**
@@ -73,11 +94,23 @@ final class TaskRegistry
 	 */
 	public function getTaskByKey (string $key) : ?Task
 	{
-		return $this->fetchAllTasks()[$key] ?? null;
+		$registeredTask = $this->fetchAllTasks()[$key] ?? null;
+
+		return $registeredTask?->task;
 	}
 
 	/**
-	 * @return array<string, Task>
+	 *
+	 */
+	public function isPublicTask (string $key) : bool
+	{
+		$registeredTask = $this->fetchAllTasks()[$key] ?? null;
+
+		return $registeredTask?->public ?? true;
+	}
+
+	/**
+	 * @return array<string, RegisteredTask>
 	 */
 	private function fetchAllTasks () : array
 	{
@@ -92,13 +125,13 @@ final class TaskRegistry
 
 		foreach ($event->getTasks() as $task)
 		{
-			$this->tasks[$task->getMetaData()->getKey()] = $task;
+			$this->tasks[$task->task->getMetaData()->getKey()] = $task;
 		}
 
 		// sort tasks globally by name
 		uasort(
 			$this->tasks,
-			static fn (Task $left, Task $right) => strnatcasecmp($left->getMetaData()->label, $right->getMetaData()->label),
+			static fn (RegisteredTask $left, RegisteredTask $right) => strnatcasecmp($left->task->getMetaData()->label, $right->task->getMetaData()->label),
 		);
 
 		return $this->tasks;
