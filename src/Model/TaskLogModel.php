@@ -4,6 +4,7 @@ namespace Torr\TaskManager\Model;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Psr\Clock\ClockInterface;
 use Torr\TaskManager\Entity\TaskLog;
 use Torr\TaskManager\Entity\TaskRun;
@@ -24,6 +25,14 @@ final class TaskLogModel
 		$repository = $this->entityManager->getRepository(TaskLog::class);
 		\assert($repository instanceof EntityRepository);
 		$this->repository = $repository;
+	}
+
+	/**
+	 *
+	 */
+	public function findById (int $id) : ?TaskLog
+	{
+		return $this->repository->find($id);
 	}
 
 	/**
@@ -48,6 +57,26 @@ final class TaskLogModel
 	}
 
 	/**
+	 * Returns the latest task log entries
+	 *
+	 * @return TaskLog[]
+	 */
+	public function getMostRecentEntries (int $limit = 100) : array
+	{
+		$query = $this->repository->createQueryBuilder("task")
+			->select("task, run")
+			->leftJoin("task.runs", "run")
+			->addOrderBy("task.timeQueued", "DESC")
+			->setMaxResults($limit)
+			->getQuery();
+
+		/** @var TaskLog[] */
+		return (new Paginator($query))
+			->getQuery()
+			->getResult();
+	}
+
+	/**
 	 * Creates a new run for the given task (lok) and marks it as persisted.
 	 */
 	public function createRunForTask (TaskLog $log) : TaskRun
@@ -68,6 +97,7 @@ final class TaskLogModel
 
 		/** @var TaskLog[] $entries */
 		$entries = $this->repository->createQueryBuilder("task")
+			->select("task, run")
 			->leftJoin("task.runs", "run")
 			->where("task.timeQueued <= :oldestTimestamp")
 			->setParameter("oldestTimestamp", $oldestTimeQueued)
