@@ -115,14 +115,14 @@ final readonly class TransportsHelper
 		}
 
 		$ordered = $this->getAllRegisteredQueueNames();
-		\usort(
+		usort(
 			$ordered,
-			function (string $queueNameLeft, string $queueNameRight) use ($indexMap) : int
+			static function (string $queueNameLeft, string $queueNameRight) use ($indexMap) : int
 			{
 				$indexLeft = $indexMap[$queueNameLeft] ?? null;
 				$indexRight = $indexMap[$queueNameRight] ?? null;
-				$leftIsScheduler = \str_starts_with($queueNameLeft, "scheduler_");
-				$rightIsScheduler = \str_starts_with($queueNameRight, "scheduler_");
+				$leftIsScheduler = str_starts_with($queueNameLeft, "scheduler_");
+				$rightIsScheduler = str_starts_with($queueNameRight, "scheduler_");
 
 				// if left is a schedule, then sort to top except if right is also schedule.
 				// If both are schedules, keep the order
