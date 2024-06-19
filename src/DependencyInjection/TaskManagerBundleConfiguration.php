@@ -23,6 +23,10 @@ final class TaskManagerBundleConfiguration implements ConfigurationInterface
 					->info("The list of queues to inspect. This list should be sorted by descending priority.")
 					->scalarPrototype()->end()
 				->end()
+				->integerNode("log_ttl")
+					->info("The max age of log entries, before they are automatically cleaned.")
+					->defaultValue(28)
+				->end()
 			->end();
 
 		return $treeBuilder;

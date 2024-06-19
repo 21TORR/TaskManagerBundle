@@ -4,6 +4,7 @@ namespace Torr\TaskManager\Model;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
+use Psr\Clock\ClockInterface;
 use Torr\TaskManager\Entity\TaskLog;
 use Torr\TaskManager\Entity\TaskRun;
 use Torr\TaskManager\Task\Task;
@@ -17,6 +18,7 @@ final class TaskLogModel
 	 */
 	public function __construct (
 		private readonly EntityManagerInterface $entityManager,
+		private readonly ClockInterface $clock,
 	)
 	{
 		$repository = $this->entityManager->getRepository(TaskLog::class);
@@ -57,9 +59,53 @@ final class TaskLogModel
 	}
 
 	/**
+	 * @return list<TaskLog>
 	 */
-	public function flush () : void
+	public function fetchOutdatedTasks (int $maxAgeInDays) : array
+	{
+		$oldestTimeQueued = $this->clock->now()
+			->sub(new \DateInterval("P{$maxAgeInDays}D"));
+
+		/** @var TaskLog[] $entries */
+		$entries = $this->repository->createQueryBuilder("task")
+			->leftJoin("task.runs", "run")
+			->where("task.timeQueued <= :oldestTimestamp")
+			->setParameter("oldestTimestamp", $oldestTimeQueued)
+			->getQuery()
+			->getResult();
+
+		$filtered = [];
+
+		foreach ($entries as $entry)
+		{
+			if ($entry->isFinished())
+			{
+				$filtered[] = $entry;
+			}
+		}
+
+		return $filtered;
+	}
+
+	/**
+	 * @return $this
+	 */
+	public function flush () : static
 	{
 		$this->entityManager->flush();
+
+		return $this;
+	}
+
+	/**
+	 * Marks the log entry for removal
+	 *
+	 * @return $this
+	 */
+	public function remove (TaskLog $log) : static
+	{
+		$this->entityManager->remove($log);
+
+		return $this;
 	}
 }

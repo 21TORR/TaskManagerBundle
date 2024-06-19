@@ -7,6 +7,7 @@ use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\StampInterface;
 use Symfony\Component\Messenger\Transport\Receiver\ListableReceiverInterface;
 use Symfony\Component\Messenger\Transport\Sync\SyncTransport;
+use Symfony\Component\Scheduler\Messenger\SchedulerTransport;
 use Torr\TaskManager\Exception\Transport\InvalidMessageTransportException;
 use Torr\TaskManager\Task\Task;
 use Torr\TaskManager\Transport\TransportsHelper;
@@ -82,6 +83,12 @@ final readonly class TaskManager
 	public function fetchTasksInQueue (string $queueName) : iterable
 	{
 		$receiver = $this->transportsHelper->getTransport($queueName);
+
+		// ignore schedulers
+		if ($receiver instanceof SchedulerTransport)
+		{
+			return [];
+		}
 
 		// skip, as sync transports can't queue messages like regular transports
 		if ($receiver instanceof SyncTransport)

@@ -9,6 +9,7 @@ use Torr\BundleHelpers\Bundle\ConfigurableBundleExtension;
 use Torr\TaskManager\Config\BundleConfig;
 use Torr\TaskManager\DependencyInjection\AutoDetectFailureTransportsCompilerInterface;
 use Torr\TaskManager\DependencyInjection\TaskManagerBundleConfiguration;
+use Torr\TaskManager\Log\LogCleaner;
 
 final class TaskManagerBundle extends Bundle
 {
@@ -24,6 +25,9 @@ final class TaskManagerBundle extends Bundle
 			{
 				$container->getDefinition(BundleConfig::class)
 					->setArgument('$sortedQueues', $config["queues"]);
+
+				$container->getDefinition(LogCleaner::class)
+					->setArgument('$logTtlInDays', $config["log_ttl"]);
 			},
 		);
 	}
