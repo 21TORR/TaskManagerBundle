@@ -58,6 +58,8 @@ class TaskLog
 	#[ORM\OrderBy(["timeStarted" => "asc"])]
 	private Collection $runs;
 
+	/**
+	 */
 	public function __construct (
 		Task $task,
 	)
