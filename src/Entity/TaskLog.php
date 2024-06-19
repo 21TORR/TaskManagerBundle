@@ -54,7 +54,7 @@ class TaskLog
 	private \DateTimeImmutable $timeQueued;
 
 	/** @var Collection<int, TaskRun> */
-	#[ORM\OneToMany(mappedBy: "taskLog", targetEntity: TaskRun::class)]
+	#[ORM\OneToMany(mappedBy: "taskLog", targetEntity: TaskRun::class, cascade: ["remove"], orphanRemoval: true)]
 	#[ORM\OrderBy(["timeStarted" => "asc"])]
 	private Collection $runs;
 
@@ -127,6 +127,14 @@ class TaskLog
 		}
 
 		return null;
+	}
+
+	/**
+	 * Returns whether all runs for this task are finished
+	 */
+	public function isFinished () : bool
+	{
+		return null === $this->getLastUnfinishedRun();
 	}
 
 	/**
