@@ -13,7 +13,7 @@
 	"require": {
 		"php": ">= 8.3",
 		"21torr/bundle-helpers": "^2.1",
-		"21torr/cli": "^1.0",
+		"21torr/cli": "^1.2.3",
 		"doctrine/orm": "^2.19",
 		"dragonmantank/cron-expression": "^3.3",
 		"symfony/clock": "^7.1",
