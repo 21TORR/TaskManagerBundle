@@ -178,6 +178,21 @@ class TaskLog
 	}
 
 	/**
+	 * Returns the unserialized cached task object
+	 */
+	public function getTaskObject () : ?object
+	{
+		$task = $this->getTaskDetails()["task"] ?? null;
+		$unserialized = \is_string($task)
+			? unserialize($task)
+			: null;
+
+		return \is_object($unserialized)
+			? $unserialized
+			: null;
+	}
+
+	/**
 	 * @return bool|null whether the task succeeded/failed or null, if it hasn't run yet
 	 */
 	public function getStatus () : ?bool
