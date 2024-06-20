@@ -1,3 +1,9 @@
+2.0.1
+=====
+
+* (improvement) Add `TaskLog::getTaskObject()`.
+
+
 2.0.0
 =====
 
