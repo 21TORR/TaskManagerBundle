@@ -29,7 +29,7 @@ final class RegisterTasksEvent
 
 		if (\array_key_exists($key, $this->tasks))
 		{
-			throw new DuplicateTaskRegisteredException(sprintf(
+			throw new DuplicateTaskRegisteredException(\sprintf(
 				"Duplicate task registered with key '%s'",
 				$key,
 			));

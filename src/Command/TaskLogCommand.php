@@ -102,7 +102,7 @@ final class TaskLogCommand extends Command
 
 		if (null === $task)
 		{
-			$io->error(sprintf("No task found with id '%d'", $taskId));
+			$io->error(\sprintf("No task found with id '%d'", $taskId));
 
 			return self::FAILURE;
 		}
@@ -120,7 +120,7 @@ final class TaskLogCommand extends Command
 
 		if (null !== $task->getHandledBy())
 		{
-			$handled[] = sprintf(
+			$handled[] = \sprintf(
 				"<fg=blue>%s</>",
 				$task->getHandledBy(),
 			);
@@ -128,7 +128,7 @@ final class TaskLogCommand extends Command
 
 		if (null !== $task->getTransport())
 		{
-			$handled[] = sprintf(
+			$handled[] = \sprintf(
 				"<fg=blue>%s</>",
 				$task->getTransport(),
 			);
@@ -158,19 +158,19 @@ final class TaskLogCommand extends Command
 					: "<fg=red>failed</>";
 			}
 
-			$io->section(sprintf(
+			$io->section(\sprintf(
 				"Run %d (%s)",
 				$index,
 				$status,
 			));
-			$io->writeln(sprintf(
+			$io->writeln(\sprintf(
 				"Started: %s",
 				$run->getTimeStarted()->format("c"),
 			));
 
 			if ($run->isFinished())
 			{
-				$io->writeln(sprintf(
+				$io->writeln(\sprintf(
 					"Duration: %s",
 					$this->formatDuration((float) $run->getDuration()),
 				));
@@ -212,7 +212,7 @@ final class TaskLogCommand extends Command
 
 			$rows[] = [
 				$task->getId(),
-				sprintf(
+				\sprintf(
 					"<fg=%s>%s</>",
 					null !== $task->getTaskLabel() ? "yellow" : "gray",
 					$task->getTaskLabel() ?? "—",
