@@ -22,9 +22,7 @@ final class TaskLogModel
 		private readonly ClockInterface $clock,
 	)
 	{
-		$repository = $this->entityManager->getRepository(TaskLog::class);
-		\assert($repository instanceof EntityRepository);
-		$this->repository = $repository;
+		$this->repository = $this->entityManager->getRepository(TaskLog::class);
 	}
 
 	/**
