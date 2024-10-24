@@ -72,7 +72,7 @@ final class DebugCommand extends Command
 					$first = false;
 				}
 
-				$row[] = sprintf(
+				$row[] = \sprintf(
 					"<fg=yellow>%s</>",
 					$metaData->getKey(),
 				);

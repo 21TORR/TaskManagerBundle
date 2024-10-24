@@ -24,7 +24,7 @@ final readonly class CleanOutdatedLogsTaskHandler
 		$io = $run->getIo();
 
 		$io->title("Task Manager: Cleaning Outdated Log Entries");
-		$io->comment(sprintf(
+		$io->comment(\sprintf(
 			"Cleaning log entries older than <fg=blue>%d days</>",
 			$this->logCleaner->getMaxLogEntryAge(),
 		));
@@ -42,7 +42,7 @@ final readonly class CleanOutdatedLogsTaskHandler
 		$io->writeln("Removed:");
 		$io->listing($deletedEntries);
 
-		$io->success(sprintf(
+		$io->success(\sprintf(
 			"Deleted <fg=yellow>%d</> %s:",
 			\count($deletedEntries),
 			1 !== \count($deletedEntries)

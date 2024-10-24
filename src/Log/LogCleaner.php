@@ -20,7 +20,7 @@ final readonly class LogCleaner
 
 		foreach ($this->model->fetchOutdatedTasks($this->logTtlInDays) as $logEntry)
 		{
-			$deleted[] = sprintf(
+			$deleted[] = \sprintf(
 				"<fg=yellow>%s</> (%s)",
 				$logEntry->getTaskLabel(),
 				$logEntry->getTimeQueued()->format("c"),

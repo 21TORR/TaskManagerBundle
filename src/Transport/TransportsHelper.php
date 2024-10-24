@@ -71,7 +71,7 @@ final readonly class TransportsHelper
 		catch (ServiceNotFoundException $exception)
 		{
 			throw new InvalidMessageTransportException(
-				message: sprintf(
+				message: \sprintf(
 					"No transport found with queue name '%s'",
 					$queueName,
 				),

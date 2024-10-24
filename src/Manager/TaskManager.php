@@ -98,7 +98,7 @@ final readonly class TaskManager
 
 		if (!$receiver instanceof ListableReceiverInterface)
 		{
-			throw new InvalidMessageTransportException(sprintf(
+			throw new InvalidMessageTransportException(\sprintf(
 				"Transport for queue '%s' must implement ListableReceiverInterface",
 				$queueName,
 			));

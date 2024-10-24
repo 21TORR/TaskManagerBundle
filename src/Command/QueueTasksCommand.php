@@ -62,7 +62,7 @@ final class QueueTasksCommand extends Command
 			return self::FAILURE;
 		}
 
-		$io->comment(sprintf(
+		$io->comment(\sprintf(
 			"Queuing <fg=magenta>%d</> task%s",
 			\count($tasksToQueue),
 			1 !== \count($tasksToQueue) ? "s" : "",
@@ -70,7 +70,7 @@ final class QueueTasksCommand extends Command
 
 		foreach ($tasksToQueue as $task)
 		{
-			$io->writeln(sprintf(
+			$io->writeln(\sprintf(
 				"• Queuing task %s",
 				$this->formatTaskLabel($task),
 			));
@@ -141,7 +141,7 @@ final class QueueTasksCommand extends Command
 		foreach ($keys as $taskKey)
 		{
 			$result[] = $this->taskRegistry->getTaskByKey($taskKey)
-				?? throw new UnknownTaskKeyException(sprintf(
+				?? throw new UnknownTaskKeyException(\sprintf(
 					"Unknown task key '%s'",
 					$taskKey,
 				));
@@ -159,7 +159,7 @@ final class QueueTasksCommand extends Command
 
 		if (null !== $metaData->group)
 		{
-			return sprintf(
+			return \sprintf(
 				"<fg=blue>%s</>: %s (<fg=yellow>%s</>)",
 				$metaData->group,
 				$metaData->label,

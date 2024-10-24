@@ -1,3 +1,10 @@
+2.0.2
+=====
+
+* (bug) Add missing dependency.
+* (improvement) Bump required Doctrine version.
+
+
 2.0.1
 =====
 
