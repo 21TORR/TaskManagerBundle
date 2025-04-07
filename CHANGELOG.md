@@ -3,6 +3,7 @@
 
 * (improvement) Bump dependencies.
 * (improvement) Require PHP 8.4.
+* (improvement) Add upcoming method in `ChainOutput` to be forward-compatible with changes in the interface.
 
 
 2.0.2
