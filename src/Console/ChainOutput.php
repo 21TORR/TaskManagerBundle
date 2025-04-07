@@ -25,8 +25,9 @@ final readonly class ChainOutput implements OutputInterface
 	}
 
 	/**
-	 * @inheritDoc
+	 *
 	 */
+	#[\Override]
 	public function write (iterable|string $messages, bool $newline = false, int $options = 0) : void
 	{
 		$this->bufferedOutput->write($messages, $newline, $options);
@@ -34,8 +35,9 @@ final readonly class ChainOutput implements OutputInterface
 	}
 
 	/**
-	 * @inheritDoc
+	 *
 	 */
+	#[\Override]
 	public function writeln (iterable|string $messages, int $options = 0) : void
 	{
 		$this->bufferedOutput->writeln($messages, $options);
@@ -43,8 +45,9 @@ final readonly class ChainOutput implements OutputInterface
 	}
 
 	/**
-	 * @inheritDoc
+	 *
 	 */
+	#[\Override]
 	public function setVerbosity (int $level) : void
 	{
 		$this->bufferedOutput->setVerbosity($level);
@@ -52,48 +55,62 @@ final readonly class ChainOutput implements OutputInterface
 	}
 
 	/**
-	 * @inheritDoc
+	 *
 	 */
+	#[\Override]
 	public function getVerbosity () : int
 	{
 		return $this->bufferedOutput->getVerbosity();
 	}
 
 	/**
-	 * @inheritDoc
+	 *
 	 */
+	#[\Override]
 	public function isQuiet () : bool
 	{
 		return $this->bufferedOutput->isQuiet();
 	}
 
 	/**
-	 * @inheritDoc
+	 *
 	 */
+	#[\Override]
 	public function isVerbose () : bool
 	{
 		return $this->bufferedOutput->isVerbose();
 	}
 
 	/**
-	 * @inheritDoc
+	 *
 	 */
+	#[\Override]
 	public function isVeryVerbose () : bool
 	{
 		return $this->bufferedOutput->isVeryVerbose();
 	}
 
 	/**
-	 * @inheritDoc
+	 *
 	 */
+	#[\Override]
 	public function isDebug () : bool
 	{
 		return $this->bufferedOutput->isDebug();
 	}
 
 	/**
-	 * @inheritDoc
+	 *
 	 */
+	public function isSilent() : bool
+	{
+		return $this->bufferedOutput->isSilent();
+	}
+
+	/**
+	 *
+	 */
+	#[\Override]
 	public function setDecorated (bool $decorated) : void
 	{
 		$this->bufferedOutput->setDecorated(true);
@@ -101,13 +118,17 @@ final readonly class ChainOutput implements OutputInterface
 	}
 
 	/**
-	 * @inheritDoc
+	 *
 	 */
+	#[\Override]
 	public function isDecorated () : bool
 	{
 		return $this->bufferedOutput->isDecorated();
 	}
 
+	/**
+	 *
+	 */
 	public function setFormatter (OutputFormatterInterface $formatter) : void
 	{
 		$this->bufferedOutput->setFormatter($formatter);
@@ -115,8 +136,9 @@ final readonly class ChainOutput implements OutputInterface
 	}
 
 	/**
-	 * @inheritDoc
+	 *
 	 */
+	#[\Override]
 	public function getFormatter () : OutputFormatterInterface
 	{
 		return $this->bufferedOutput->getFormatter();
