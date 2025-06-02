@@ -2,7 +2,7 @@
 =====
 
 * (feature) Add `task-manager:run-worker` command as wrapper for Symfony messengers `consume` command.
-* (improvement) Default to limit of 5 messages in run worker command, if no other limit is given.
+* (improvement) Default to `limit` of 5 messages in run worker command, if no other limit is given.
 
 
 2.0.3
