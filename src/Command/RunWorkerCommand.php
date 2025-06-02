@@ -71,13 +71,23 @@ class RunWorkerCommand extends Command
 			$io->caution("The app is using sync transports: that means that registered tasks are directly worked on and not in this worker. These queues are automatically filtered in this worker by Symfony.");
 		}
 
-		$messengerConsumeArguments = new ArrayInput(array_filter([
-			'command' => 'messenger:consume',
-			'receivers' => $this->transportsHelper->getOrderedQueueNames(),
+		$limits = array_filter([
 			'--limit' => $input->getOption("limit"),
 			'--time-limit' => $input->getOption("time-limit"),
 			'--failure-limit' => $input->getOption("failure-limit"),
 			'--memory-limit' => $input->getOption("memory-limit"),
+		]);
+
+		// if no limits are set, default to 5 messages
+		if (empty($limits))
+		{
+			$limits["--limit"] = 5;
+		}
+
+		$messengerConsumeArguments = new ArrayInput(array_filter([
+			'command' => 'messenger:consume',
+			'receivers' => $this->transportsHelper->getOrderedQueueNames(),
+			...$limits,
 		]));
 
 		// disable interactive behavior for the greet command
