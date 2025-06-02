@@ -3,6 +3,7 @@
 namespace Torr\TaskManager\Task;
 
 use Symfony\Component\String\Slugger\AsciiSlugger;
+use Torr\Snail\Snail\Snailer;
 use Torr\TaskManager\Exception\Task\InvalidTaskDefinitionException;
 
 use function Symfony\Component\String\u;
@@ -20,7 +21,7 @@ final readonly class TaskMetaData
 		public ?string $uniqueTaskId = null,
 	)
 	{
-		if (null !== $this->uniqueTaskId && !preg_match('~^[a-z0-9]+([.\\-_][a-z0-9]+)*$~', $this->uniqueTaskId))
+		if (null !== $this->uniqueTaskId && !Snailer::isValidSnail($this->uniqueTaskId))
 		{
 			throw new InvalidTaskDefinitionException(\sprintf(
 				"Invalid unique task id: '%s'",
