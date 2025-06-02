@@ -88,17 +88,30 @@ final class TaskLogModel
 	/**
 	 * @return list<TaskLog>
 	 */
-	public function fetchOutdatedTasks (int $maxAgeInDays) : array
+	public function fetchOutdatedTasks (
+		int $maxAgeInDays,
+		int $maxEntries,
+	) : array
 	{
-		$oldestTimeQueued = $this->clock->now()
+		// start with a fixed TTL
+		$purgeBefore = $this->clock->now()
 			->sub(new \DateInterval("P{$maxAgeInDays}D"));
+
+		// check whether the last entry at "max entries" would be newer than the
+		// TTL. If so, then adjust the purge date, to fulfill both
+		$cutOffEntry = $this->getCutoffEntry($maxEntries);
+
+		if (null !== $cutOffEntry && $cutOffEntry->getTimeQueued() > $purgeBefore)
+		{
+			$purgeBefore = $cutOffEntry->getTimeQueued();
+		}
 
 		/** @var TaskLog[] $entries */
 		$entries = $this->repository->createQueryBuilder("task")
 			->select("task, run")
 			->leftJoin("task.runs", "run")
 			->where("task.timeQueued <= :oldestTimestamp")
-			->setParameter("oldestTimestamp", $oldestTimeQueued)
+			->setParameter("oldestTimestamp", $purgeBefore)
 			->getQuery()
 			->getResult();
 
@@ -113,6 +126,22 @@ final class TaskLogModel
 		}
 
 		return $filtered;
+	}
+
+	/**
+	 *
+	 */
+	private function getCutoffEntry (int $maxEntries) : ?TaskLog
+	{
+		/** @var TaskLog[] $result */
+		$result = $this->repository->createQueryBuilder("task")
+		->addOrderBy("task.timeQueued", "DESC")
+		->setFirstResult($maxEntries)
+		->setMaxResults(1)
+		->getQuery()
+		->getResult();
+
+		return $result[0] ?? null;
 	}
 
 	/**
