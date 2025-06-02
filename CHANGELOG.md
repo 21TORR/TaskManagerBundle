@@ -1,3 +1,9 @@
+2.1.0
+=====
+
+* (feature) Add `task-manager:run-worker` command as wrapper for Symfony messengers `consume` command.
+
+
 2.0.3
 =====
 
