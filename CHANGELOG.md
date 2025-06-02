@@ -4,7 +4,7 @@
 * (feature) Add `task-manager:run-worker` command as wrapper for Symfony messengers `consume` command.
 * (improvement) Default to `limit` of 5 messages in run worker command, if no other limit is given.
 * (improvement) Validate unique task ids to a specific format.
-* (feature) Also purge log entries with a max number entry.
+* (feature) Also purge log entries with a max number of entries.
 
 
 2.0.3
