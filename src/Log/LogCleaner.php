@@ -8,6 +8,7 @@ final readonly class LogCleaner
 {
 	public function __construct (
 		private int $logTtlInDays,
+		private int $logMaxEntries,
 		private TaskLogModel $model,
 	) {}
 
@@ -18,7 +19,9 @@ final readonly class LogCleaner
 	{
 		$deleted = [];
 
-		foreach ($this->model->fetchOutdatedTasks($this->logTtlInDays) as $logEntry)
+		$outdatedTasks = $this->model->fetchOutdatedTasks($this->logTtlInDays, $this->logMaxEntries);
+
+		foreach ($outdatedTasks as $logEntry)
 		{
 			$deleted[] = \sprintf(
 				"<fg=yellow>%s</> (%s)",
@@ -40,5 +43,13 @@ final readonly class LogCleaner
 	public function getMaxLogEntryAge () : int
 	{
 		return $this->logTtlInDays;
+	}
+
+	/**
+	 * Returns the maximum number of log entries to keep
+	 */
+	public function getMaxLogEntryNumber () : int
+	{
+		return $this->logMaxEntries;
 	}
 }

@@ -26,8 +26,16 @@ final class TaskManagerBundle extends Bundle
 				$container->getDefinition(BundleConfig::class)
 					->setArgument('$sortedQueues', $config["queues"]);
 
+				// if the new value was customized, use it. Otherwise keep using
+				// the old value. If none is set, they use the same default, so everything
+				// is fine.
+				$logTtl = 28 !== $config["log"]["ttl"]
+					? $config["log"]["ttl"]
+					: $config["log_ttl"];
+
 				$container->getDefinition(LogCleaner::class)
-					->setArgument('$logTtlInDays', $config["log_ttl"]);
+					->setArgument('$logTtlInDays', $logTtl)
+					->setArgument('$logMaxEntries', $config["log"]["max_entries"]);
 			},
 		);
 	}
