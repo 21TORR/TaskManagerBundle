@@ -2,6 +2,7 @@
 
 namespace Tests\Torr\TaskManager\Task;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Torr\TaskManager\Exception\Task\InvalidTaskDefinitionException;
 use Torr\TaskManager\Task\TaskMetaData;
@@ -22,8 +23,8 @@ final class TaskMetaDataTest extends TestCase
 	}
 
 	/**
-	 * @dataProvider provideValidUniqueTaskIds
 	 */
+	#[DataProvider("provideValidUniqueTaskIds")]
 	public function testValidUniqueTaskIds (string $uniqueTaskId) : void
 	{
 		$metadata = new TaskMetaData("Test", uniqueTaskId: $uniqueTaskId);
@@ -45,8 +46,8 @@ final class TaskMetaDataTest extends TestCase
 	}
 
 	/**
-	 * @dataProvider provideInvalidUniqueTaskIds
 	 */
+	#[DataProvider("provideInvalidUniqueTaskIds")]
 	public function testInvalidUniqueTaskIds (string $uniqueTaskId) : void
 	{
 		$this->expectException(InvalidTaskDefinitionException::class);

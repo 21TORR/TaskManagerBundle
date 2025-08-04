@@ -1,3 +1,9 @@
+2.1.1
+=====
+
+* (internal) Update `21torr/janus` and use `phpunit` instead of `simple-phpunit`.
+
+
 2.1.0
 =====
 
