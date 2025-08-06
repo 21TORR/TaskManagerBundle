@@ -26,7 +26,8 @@ class TaskRun
 	/**
 	 */
 	#[ORM\ManyToOne(targetEntity: TaskLog::class, inversedBy: "runs")]
-	private ?TaskLog $taskLog;
+	#[ORM\JoinColumn(name: "task_log_id", referencedColumnName: "id", nullable: false)]
+	private TaskLog $taskLog;
 
 	/**
 	 *
@@ -73,7 +74,7 @@ class TaskRun
 	// region Accessors
 	/**
 	 */
-	public function getTaskLog () : ?TaskLog
+	public function getTaskLog () : TaskLog
 	{
 		return $this->taskLog;
 	}
