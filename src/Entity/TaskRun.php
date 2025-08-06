@@ -26,6 +26,7 @@ class TaskRun
 	/**
 	 */
 	#[ORM\ManyToOne(targetEntity: TaskLog::class, inversedBy: "runs")]
+	#[ORM\JoinColumn(name: "task_log_id", referencedColumnName: "id", nullable: false)]
 	private TaskLog $taskLog;
 
 	/**

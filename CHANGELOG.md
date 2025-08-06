@@ -1,3 +1,11 @@
+2.1.1
+=====
+
+* (improvement) Replace `.` with `:` in `TaskMetaData::getKey`.
+* (improvement) Change column of `TaskRun::$taskLog` to be not nullable.
+* (internal) Update `21torr/janus` and use `phpunit` instead of `simple-phpunit`.
+
+
 2.1.0
 =====
 

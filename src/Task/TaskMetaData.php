@@ -38,7 +38,7 @@ final readonly class TaskMetaData
 		// these are validated to be safe, so we can keep using these
 		if (null !== $this->uniqueTaskId)
 		{
-			return $this->uniqueTaskId;
+			return strtr($this->uniqueTaskId, ".", ":");
 		}
 
 		$slugger = new AsciiSlugger("en");
