@@ -1,6 +1,7 @@
 2.1.1
 =====
 
+* (improvement) Replace `.` with `-` in `TaskMetaData::getKey`.
 * (internal) Update `21torr/janus` and use `phpunit` instead of `simple-phpunit`.
 
 

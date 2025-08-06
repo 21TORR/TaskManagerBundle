@@ -17,7 +17,7 @@ final class TaskMetaDataTest extends TestCase
 		yield "plain" => ["test"];
 		yield "with dash" => ["a-b"];
 		yield "with underscore" => ["a-b_c"];
-		yield "all characters" => ["a-b_c.d"];
+		yield "all characters" => ["a-b_c.d", "a-b_c-d"];
 		yield "numbers" => ["5"];
 		yield "numbers longer" => ["1-2-3-4"];
 	}
@@ -25,10 +25,10 @@ final class TaskMetaDataTest extends TestCase
 	/**
 	 */
 	#[DataProvider("provideValidUniqueTaskIds")]
-	public function testValidUniqueTaskIds (string $uniqueTaskId) : void
+	public function testValidUniqueTaskIds (string $uniqueTaskId, ?string $key = null) : void
 	{
 		$metadata = new TaskMetaData("Test", uniqueTaskId: $uniqueTaskId);
-		self::assertSame($uniqueTaskId, $metadata->getKey());
+		self::assertSame($key ?? $uniqueTaskId, $metadata->getKey());
 	}
 
 	public static function provideInvalidUniqueTaskIds () : iterable
