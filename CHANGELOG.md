@@ -1,3 +1,9 @@
+2.2.0
+=====
+
+* (feature) Add app validator to ensure, that all tasks are properly configured in the routing.
+
+
 2.1.1
 =====
 

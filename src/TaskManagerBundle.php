@@ -7,9 +7,11 @@ use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 use Torr\BundleHelpers\Bundle\ConfigurableBundleExtension;
 use Torr\TaskManager\Config\BundleConfig;
-use Torr\TaskManager\DependencyInjection\AutoDetectFailureTransportsCompilerInterface;
+use Torr\TaskManager\DependencyInjection\AutoDetectFailureTransportsCompilerPass;
+use Torr\TaskManager\DependencyInjection\FindTaskClassesCompilerPass;
 use Torr\TaskManager\DependencyInjection\TaskManagerBundleConfiguration;
 use Torr\TaskManager\Log\LogCleaner;
+use Torr\TaskManager\Task\Task;
 
 final class TaskManagerBundle extends Bundle
 {
@@ -45,7 +47,12 @@ final class TaskManagerBundle extends Bundle
 	 */
 	public function build (ContainerBuilder $container) : void
 	{
-		$container->addCompilerPass(new AutoDetectFailureTransportsCompilerInterface());
+		$container
+			->addCompilerPass(new AutoDetectFailureTransportsCompilerPass())
+			->addCompilerPass(new FindTaskClassesCompilerPass());
+
+		$container->registerForAutoconfiguration(Task::class)
+			->addTag("task-manager.task");
 	}
 
 	/**

@@ -9,7 +9,7 @@ use Torr\TaskManager\Config\BundleConfig;
 /**
  * Integrates into symfony/messenger, by automatically detecting the failure transports
  */
-final class AutoDetectFailureTransportsCompilerInterface implements CompilerPassInterface
+final class AutoDetectFailureTransportsCompilerPass implements CompilerPassInterface
 {
 	/**
 	 * @inheritDoc
