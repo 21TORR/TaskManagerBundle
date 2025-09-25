@@ -7,7 +7,7 @@ use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 use Torr\BundleHelpers\Bundle\ConfigurableBundleExtension;
 use Torr\TaskManager\Config\BundleConfig;
-use Torr\TaskManager\DependencyInjection\AutoDetectFailureTransportsCompilerInterface;
+use Torr\TaskManager\DependencyInjection\AutoDetectFailureTransportsCompilerPass;
 use Torr\TaskManager\DependencyInjection\TaskManagerBundleConfiguration;
 use Torr\TaskManager\Log\LogCleaner;
 
@@ -45,7 +45,7 @@ final class TaskManagerBundle extends Bundle
 	 */
 	public function build (ContainerBuilder $container) : void
 	{
-		$container->addCompilerPass(new AutoDetectFailureTransportsCompilerInterface());
+		$container->addCompilerPass(new AutoDetectFailureTransportsCompilerPass());
 	}
 
 	/**
