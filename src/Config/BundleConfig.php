@@ -11,5 +11,7 @@ final readonly class BundleConfig
 		public array $sortedQueues,
 		/** @var string[] */
 		public array $failureTransports = [],
+		/** @var class-string[] */
+		public array $taskClasses = [],
 	) {}
 }
