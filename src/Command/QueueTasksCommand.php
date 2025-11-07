@@ -167,6 +167,10 @@ final class QueueTasksCommand extends Command
 			);
 		}
 
-		return $metaData->label;
+		return \sprintf(
+			"%s (<fg=yellow>%s</>)",
+			$metaData->label,
+			$metaData->getKey(),
+		);
 	}
 }

@@ -1,3 +1,9 @@
+2.3.0
+=====
+
+* (improvement) Always show key of task in queue tasks command.
+
+
 2.2.0
 =====
 
