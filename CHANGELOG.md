@@ -1,3 +1,10 @@
+2.3.0
+=====
+
+* (improvement) Always show key of task in queue tasks command.
+* (feature) Add `DispatchAfterRunTask` to be able to redispatch tasks after the given run. You can use it in the Scheduler to reliably redispatch tasks.
+
+
 2.2.0
 =====
 
