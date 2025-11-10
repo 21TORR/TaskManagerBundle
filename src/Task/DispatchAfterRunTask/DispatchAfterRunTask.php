@@ -2,6 +2,7 @@
 
 namespace Torr\TaskManager\Task\DispatchAfterRunTask;
 
+use Symfony\Component\Messenger\Attribute\AsMessage;
 use Torr\TaskManager\Task\Task;
 use Torr\TaskManager\Task\TaskMetaData;
 
@@ -11,6 +12,7 @@ use Torr\TaskManager\Task\TaskMetaData;
  * This task is supposed to be worked on synchronously, as it is pretty lightweight and only
  * redispatches the given task.
  */
+#[AsMessage(transport: "task_manager_internals")]
 readonly class DispatchAfterRunTask extends Task
 {
 	public function __construct (
