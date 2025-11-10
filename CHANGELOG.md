@@ -1,3 +1,10 @@
+2.3.1
+=====
+
+* (bug) Properly handle `DispatchAfterRunTask`.
+* (improvement) Add `task_manager_internals` transport for internal messages.
+
+
 2.3.0
 =====
 
