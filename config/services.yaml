@@ -9,7 +9,8 @@ services:
             - ../src/Entity/*
             - ../src/Event/*
             - ../src/Exception/*
-            - ../src/Task/*
+            - ../src/Task/Task.php
+            - ../src/Task/TaskMetaDataf.php
             - ../src/TaskManagerBundle.php
 
     Torr\TaskManager\Transport\TransportsHelper:
