@@ -3,6 +3,7 @@
 
 * (bug) Properly handle `DispatchAfterRunTask`.
 * (improvement) Add `task_manager_internals` transport for internal messages.
+* (improvement) Increase default number of handled tasks in `run-worker` command.
 
 
 2.3.0

@@ -78,10 +78,10 @@ class RunWorkerCommand extends Command
 			'--memory-limit' => $input->getOption("memory-limit"),
 		]);
 
-		// if no limits are set, default to 5 messages
+		// if no limits are set, default to 10 messages
 		if (empty($limits))
 		{
-			$limits["--limit"] = 5;
+			$limits["--limit"] = 10;
 		}
 
 		$messengerConsumeArguments = new ArrayInput(array_filter([
