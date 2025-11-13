@@ -8,6 +8,7 @@ use Torr\BundleHelpers\Bundle\BundleExtension;
 use Torr\TaskManager\Config\BundleConfig;
 use Torr\TaskManager\Log\LogCleaner;
 use Torr\TaskManager\Task\DispatchAfterRunTask\DispatchAfterRunTask;
+use Torr\TaskManager\Transport\TransportsHelper;
 
 /**
  * @final
@@ -49,12 +50,12 @@ class TaskManagerBundleExtension extends BundleExtension implements PrependExten
 			// We only register the sync task, so that the own tasks are worked on right away
 			"messenger" => [
 				"transports" => [
-					"task_manager_internals" => [
+					TransportsHelper::INTERNAL_TRANSPORT_NAME => [
 						"dsn" => 'sync://',
 					],
 				],
 				"routing" => [
-					DispatchAfterRunTask::class => "task_manager_internals",
+					DispatchAfterRunTask::class => TransportsHelper::INTERNAL_TRANSPORT_NAME,
 				],
 			],
 		]);
