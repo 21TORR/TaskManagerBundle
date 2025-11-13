@@ -16,6 +16,8 @@ use Torr\TaskManager\Exception\Transport\InvalidMessageTransportException;
  */
 final readonly class TransportsHelper
 {
+	public const string INTERNAL_TRANSPORT_NAME = "task_manager_internals";
+
 	/**
 	 */
 	public function __construct (
@@ -29,8 +31,13 @@ final readonly class TransportsHelper
 	 */
 	public function hasSyncTransport () : bool
 	{
-		foreach ($this->getAllTransports() as $transport)
+		foreach ($this->getAllTransports() as $name => $transport)
 		{
+			if (self::INTERNAL_TRANSPORT_NAME === $name)
+			{
+				continue;
+			}
+
 			if ($transport instanceof SyncTransport)
 			{
 				return true;

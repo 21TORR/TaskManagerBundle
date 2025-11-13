@@ -1,3 +1,10 @@
+2.3.2
+=====
+
+* (improvement) Skip `task_manager_internals` queue when checking for sync-queues.
+
+
+
 2.3.1
 =====
 
