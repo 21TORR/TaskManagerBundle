@@ -1,3 +1,10 @@
+2.3.3 (unreleased)
+=====
+
+* (improvement) Simplify task run duration calculation.
+
+
+
 2.3.2
 =====
 

@@ -4,6 +4,7 @@ namespace Torr\TaskManager\Entity;
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Torr\TaskManager\Duration\DurationCalculator;
 use Torr\TaskManager\Exception\Log\InvalidLogActionException;
 
 use function Symfony\Component\Clock\now;
@@ -55,11 +56,6 @@ class TaskRun
 	 */
 	#[ORM\Column(type: Types::TEXT, nullable: true)]
 	private ?string $output = null;
-
-	/**
-	 *
-	 */
-	private ?float $start = null;
 	// endregion
 
 	/**
@@ -68,7 +64,6 @@ class TaskRun
 	{
 		$this->taskLog = $taskLog;
 		$this->timeStarted = now();
-		$this->start = hrtime(true);
 	}
 
 	// region Accessors
@@ -164,14 +159,9 @@ class TaskRun
 			throw new InvalidLogActionException("Can't finalize task run #{$this->id} as it is already finished.");
 		}
 
-		if (null === $this->start)
-		{
-			throw new InvalidLogActionException("Can't finalize a task that wasn't started in this run.");
-		}
-
 		$this->success = $success;
 		$this->finishedProperly = $finishedProperly;
 		$this->output = $output;
-		$this->duration = hrtime(true) - $this->start;
+		$this->duration = new DurationCalculator()->calculateDuration($this->timeStarted, now());
 	}
 }
