@@ -26,7 +26,7 @@ final readonly class LogCleaner
 			$deleted[] = \sprintf(
 				"<fg=yellow>%s</> (%s)",
 				$logEntry->getTaskLabel(),
-				$logEntry->getTimeQueued()->format("c"),
+				$logEntry->timeQueued->format("c"),
 			);
 
 			$this->model->remove($logEntry);

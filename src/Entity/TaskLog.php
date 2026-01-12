@@ -32,13 +32,13 @@ class TaskLog
 	#[ORM\Id]
 	#[ORM\GeneratedValue(strategy: "AUTO")]
 	#[ORM\Column(name: "id", type: Types::INTEGER)]
-	private ?int $id = null;
+	public private(set) ?int $id = null;
 
 	/**
 	 * ULIDs have only 22 characters, but just to be sure
 	 */
 	#[ORM\Column(type: Types::STRING, length: 50, unique: true)]
-	private string $taskId;
+	public private(set) string $taskId;
 
 	/**
 	 * The encoded task details
@@ -52,12 +52,12 @@ class TaskLog
 	 *
 	 */
 	#[ORM\Column(name: "time_queued", type: Types::DATETIMETZ_IMMUTABLE)]
-	private \DateTimeImmutable $timeQueued;
+	public private(set) \DateTimeImmutable $timeQueued;
 
 	/** @var Collection<int, TaskRun> */
 	#[ORM\OneToMany(mappedBy: "taskLog", targetEntity: TaskRun::class, cascade: ["remove"], orphanRemoval: true)]
 	#[ORM\OrderBy(["timeStarted" => "asc"])]
-	private Collection $runs;
+	public private(set) Collection $runs;
 
 	/**
 	 */
@@ -71,6 +71,7 @@ class TaskLog
 	}
 
 	/**
+	 * @deprecated use the property directly instead
 	 */
 	public function getId () : ?int
 	{
@@ -78,6 +79,7 @@ class TaskLog
 	}
 
 	/**
+	 * @deprecated use the property directly instead
 	 */
 	public function getTaskId () : string
 	{
@@ -85,6 +87,7 @@ class TaskLog
 	}
 
 	/**
+	 * @deprecated use the property directly instead
 	 */
 	public function getTimeQueued () : \DateTimeImmutable
 	{
@@ -93,6 +96,8 @@ class TaskLog
 
 	/**
 	 * @return Collection<int, TaskRun>
+	 *
+	 * @deprecated use the property directly instead
 	 */
 	public function getRuns () : Collection
 	{
@@ -106,7 +111,7 @@ class TaskLog
 	{
 		foreach ($this->runs as $run)
 		{
-			if ($run->isSuccess())
+			if ($run->success)
 			{
 				return true;
 			}
@@ -121,7 +126,7 @@ class TaskLog
 	{
 		foreach ($this->runs as $run)
 		{
-			if (!$run->isFinished())
+			if (!$run->isFinished)
 			{
 				return $run;
 			}
@@ -202,12 +207,12 @@ class TaskLog
 
 		foreach ($this->runs as $run)
 		{
-			if (!$run->isFinished())
+			if (!$run->isFinished)
 			{
 				continue;
 			}
 
-			if ($run->isSuccess())
+			if ($run->success)
 			{
 				return true;
 			}
@@ -228,7 +233,7 @@ class TaskLog
 
 		foreach ($this->runs as $run)
 		{
-			$duration += (float) $run->getDuration();
+			$duration += (float) $run->duration;
 		}
 
 		return $duration;

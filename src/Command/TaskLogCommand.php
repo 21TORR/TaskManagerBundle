@@ -135,25 +135,25 @@ final class TaskLogCommand extends Command
 		}
 
 		$io->definitionList(
-			["Task ID" => $task->getId()],
+			["Task ID" => $task->id],
 			["Task" => $task->getTaskLabel()],
 			["Status" => $status],
-			["Task Class" => $task->getTaskClass() ?? "<fg=gray>—</>"],
-			["Runs" => \count($task->getRuns())],
+			["Task Class" => $task->getTaskClass()],
+			["Runs" => \count($task->runs)],
 			["Total Duration" => $this->formatDuration($task->getTotalDuration())],
 			["Handled by" => implode(" on ", $handled)],
-			["Registered" => $task->getTimeQueued()->format("c")],
+			["Registered" => $task->timeQueued->format("c")],
 		);
 
-		$index = \count($task->getRuns());
+		$index = \count($task->runs);
 
-		foreach ($task->getRuns() as $run)
+		foreach ($task->runs as $run)
 		{
 			$status = "<fg=yellow>running</>";
 
-			if ($run->isFinished())
+			if ($run->isFinished)
 			{
-				$status = $run->isSuccess()
+				$status = $run->success
 					? "<fg=green>succeeded</>"
 					: "<fg=red>failed</>";
 			}
@@ -165,19 +165,19 @@ final class TaskLogCommand extends Command
 			));
 			$io->writeln(\sprintf(
 				"Started: %s",
-				$run->getTimeStarted()->format("c"),
+				$run->timeStarted->format("c"),
 			));
 
-			if ($run->isFinished())
+			if ($run->isFinished)
 			{
 				$io->writeln(\sprintf(
 					"Duration: %s",
-					$this->formatDuration((float) $run->getDuration()),
+					$this->formatDuration((float) $run->duration),
 				));
 				$io->writeln("Output:");
 				$io->newLine();
 				$io->writeln("------------------");
-				$io->writeln((string) $run->getOutput());
+				$io->writeln((string) $run->output);
 				$io->writeln("------------------");
 			}
 
@@ -211,17 +211,17 @@ final class TaskLogCommand extends Command
 			}
 
 			$rows[] = [
-				$task->getId(),
+				$task->id,
 				\sprintf(
 					"<fg=%s>%s</>",
 					null !== $task->getTaskLabel() ? "yellow" : "gray",
 					$task->getTaskLabel() ?? "—",
 				),
 				$status,
-				$task->getTaskClass() ?? "<fg=gray>—</>",
-				\count($task->getRuns()),
+				$task->getTaskClass(),
+				\count($task->runs),
 				$this->formatDuration($task->getTotalDuration()),
-				$task->getTimeQueued()->format("c"),
+				$task->timeQueued->format("c"),
 			];
 		}
 		$rows[] = [
