@@ -6,6 +6,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Psr\Log\LoggerInterface;
 use Torr\TaskManager\Exception\Log\InvalidLogActionException;
 use Torr\TaskManager\Task\Task;
 
@@ -140,14 +141,14 @@ class TaskLog
 	/**
 	 *
 	 */
-	public function startRun () : TaskRun
+	public function createRun (?LoggerInterface $logger = null) : TaskRun
 	{
 		if ($this->isSuccess())
 		{
 			throw new InvalidLogActionException("Can't start a run for a task #{$this->id} that is already finished.");
 		}
 
-		$run = new TaskRun($this);
+		$run = new TaskRun($this, $logger);
 		$this->runs->add($run);
 
 		return $run;

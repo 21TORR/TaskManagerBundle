@@ -4,8 +4,8 @@ namespace Torr\TaskManager\Entity;
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Psr\Log\LoggerInterface;
 use Torr\TaskManager\Duration\DurationCalculator;
-use Torr\TaskManager\Exception\Log\InvalidLogActionException;
 
 use function Symfony\Component\Clock\now;
 
@@ -60,7 +60,10 @@ class TaskRun
 
 	/**
 	 */
-	public function __construct (TaskLog $taskLog)
+	public function __construct (
+		TaskLog $taskLog,
+		private ?LoggerInterface $logger = null,
+	)
 	{
 		$this->taskLog = $taskLog;
 		$this->timeStarted = now();
@@ -156,7 +159,13 @@ class TaskRun
 	{
 		if ($this->isFinished())
 		{
-			throw new InvalidLogActionException("Can't finalize task run #{$this->id} as it is already finished.");
+			$this->logger?->error("Can't finalize task run {id} as it is already finished.", [
+				"id" => $this->id,
+				"success" => $success,
+				"finishedProperly" => $finishedProperly,
+			]);
+
+			return;
 		}
 
 		$this->success = $success;

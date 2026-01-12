@@ -2,7 +2,7 @@
 =====
 
 * (improvement) Simplify task run duration calculation.
-
+* (improvement) Transform exception to log entry, so that the worker doesn't constantly fail.
 
 
 2.3.2
