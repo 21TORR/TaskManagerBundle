@@ -103,9 +103,9 @@ final class TaskLogModel
 		// TTL. If so, then adjust the purge date, to fulfill both
 		$cutOffEntry = $this->getCutoffEntry($maxEntries);
 
-		if (null !== $cutOffEntry && $cutOffEntry->getTimeQueued() > $purgeBefore)
+		if (null !== $cutOffEntry && $cutOffEntry->timeQueued > $purgeBefore)
 		{
-			$purgeBefore = $cutOffEntry->getTimeQueued();
+			$purgeBefore = $cutOffEntry->timeQueued;
 		}
 
 		/** @var TaskLog[] $entries */

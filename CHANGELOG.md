@@ -3,6 +3,7 @@
 
 * (improvement) Simplify task run duration calculation.
 * (improvement) Transform exception to log entry, so that the worker doesn't constantly fail.
+* (deprecation) Deprecate entity getters in favor of properties.
 
 
 2.3.2

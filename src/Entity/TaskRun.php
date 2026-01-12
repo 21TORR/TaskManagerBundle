@@ -22,40 +22,43 @@ class TaskRun
 	#[ORM\Id]
 	#[ORM\GeneratedValue(strategy: "AUTO")]
 	#[ORM\Column(name: "id", type: Types::INTEGER)]
-	private ?int $id = null;
+	public private(set) ?int $id = null;
 
 	/**
 	 */
 	#[ORM\ManyToOne(targetEntity: TaskLog::class, inversedBy: "runs")]
 	#[ORM\JoinColumn(name: "task_log_id", referencedColumnName: "id", nullable: false)]
-	private TaskLog $taskLog;
+	public private(set) TaskLog $taskLog;
 
 	/**
 	 *
 	 */
 	#[ORM\Column(type: Types::DATETIMETZ_IMMUTABLE)]
-	private \DateTimeImmutable $timeStarted;
+	public private(set) \DateTimeImmutable $timeStarted;
 
 	/**
 	 *
 	 */
 	#[ORM\Column(type: Types::FLOAT, nullable: true)]
-	private ?float $duration = null;
+	public private(set) ?float $duration = null;
 
 	/**
 	 */
 	#[ORM\Column(type: Types::BOOLEAN, nullable: true)]
-	private ?bool $success = null;
+	public private(set) ?bool $success = null;
 
 	/**
 	 */
 	#[ORM\Column(type: Types::BOOLEAN, nullable: true)]
-	private ?bool $finishedProperly = null;
+	public private(set) ?bool $finishedProperly = null;
 
 	/**
 	 */
 	#[ORM\Column(type: Types::TEXT, nullable: true)]
-	private ?string $output = null;
+	public private(set) ?string $output = null;
+	public bool $isFinished {
+		get => null !== $this->duration;
+	}
 	// endregion
 
 	/**
@@ -71,6 +74,7 @@ class TaskRun
 
 	// region Accessors
 	/**
+	 * @deprecated use the property directly instead
 	 */
 	public function getTaskLog () : TaskLog
 	{
@@ -78,6 +82,7 @@ class TaskRun
 	}
 
 	/**
+	 * @deprecated use the property directly instead
 	 */
 	public function getTimeStarted () : \DateTimeImmutable
 	{
@@ -85,7 +90,9 @@ class TaskRun
 	}
 
 	/**
-	 * Whether the task was finished successfully.
+	 * @deprecated use the property directly instead
+	 *
+	 * Whether the task was finished successfully
 	 *
 	 * @return bool|null Whether the task was finished successfully. Will return null if not yet finished.
 	 */
@@ -95,6 +102,7 @@ class TaskRun
 	}
 
 	/**
+	 * @deprecated use the property directly instead
 	 */
 	public function getOutput () : ?string
 	{
@@ -102,6 +110,7 @@ class TaskRun
 	}
 
 	/**
+	 * @deprecated use the property directly instead
 	 */
 	public function isFinished () : bool
 	{
@@ -110,6 +119,8 @@ class TaskRun
 
 	/**
 	 * The duration of the run in nanoseconds (if the task is finished already)
+	 *
+	 * @deprecated use the property directly instead
 	 */
 	public function getDuration () : ?float
 	{
@@ -157,7 +168,7 @@ class TaskRun
 		?string $output = null,
 	) : void
 	{
-		if ($this->isFinished())
+		if ($this->isFinished)
 		{
 			$this->logger?->error("Can't finalize task run {id} as it is already finished.", [
 				"id" => $this->id,
