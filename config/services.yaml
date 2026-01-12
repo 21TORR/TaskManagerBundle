@@ -10,7 +10,7 @@ services:
             - ../src/Event/*
             - ../src/Exception/*
             - ../src/Task/Task.php
-            - ../src/Task/TaskMetaDataf.php
+            - ../src/Task/TaskMetaData.php
             - ../src/TaskManagerBundle.php
 
     Torr\TaskManager\Transport\TransportsHelper:
