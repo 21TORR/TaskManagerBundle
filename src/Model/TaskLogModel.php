@@ -6,6 +6,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Psr\Clock\ClockInterface;
+use Psr\Log\LoggerInterface;
 use Torr\TaskManager\Entity\TaskLog;
 use Torr\TaskManager\Entity\TaskRun;
 use Torr\TaskManager\Task\Task;
@@ -20,6 +21,7 @@ final class TaskLogModel
 	public function __construct (
 		private readonly EntityManagerInterface $entityManager,
 		private readonly ClockInterface $clock,
+		private readonly LoggerInterface $logger,
 	)
 	{
 		$this->repository = $this->entityManager->getRepository(TaskLog::class);
@@ -79,7 +81,7 @@ final class TaskLogModel
 	 */
 	public function createRunForTask (TaskLog $log) : TaskRun
 	{
-		$run = new TaskRun($log);
+		$run = $log->createRun($this->logger);
 		$this->entityManager->persist($run);
 
 		return $run;
