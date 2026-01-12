@@ -56,6 +56,9 @@ class TaskRun
 	 */
 	#[ORM\Column(type: Types::TEXT, nullable: true)]
 	public private(set) ?string $output = null;
+
+	/**
+	 */
 	public bool $isFinished {
 		get => null !== $this->duration;
 	}
@@ -65,7 +68,7 @@ class TaskRun
 	 */
 	public function __construct (
 		TaskLog $taskLog,
-		private ?LoggerInterface $logger = null,
+		private readonly ?LoggerInterface $logger = null,
 	)
 	{
 		$this->taskLog = $taskLog;

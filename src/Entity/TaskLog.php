@@ -14,7 +14,6 @@ use function Symfony\Component\Clock\now;
 
 /**
  * @phpstan-type TaskDetails array{
- *     "class"?: class-string|null,
  *     "handledBy"?: string|null,
  *     "label"?: string,
  *     "task"?: string,
@@ -41,6 +40,12 @@ class TaskLog
 	public private(set) string $taskId;
 
 	/**
+	 *
+	 */
+	#[ORM\Column(type: Types::STRING, length: 1000)]
+	public string $taskClass;
+
+	/**
 	 * The encoded task details
 	 *
 	 * @var TaskDetails
@@ -65,6 +70,7 @@ class TaskLog
 		Task $task,
 	)
 	{
+		$this->taskClass = $task::class;
 		$this->taskId = $task->ulid;
 		$this->runs = new ArrayCollection();
 		$this->timeQueued = now();
@@ -257,9 +263,11 @@ class TaskLog
 
 	/**
 	 * Returns the class of the message
+	 *
+	 * @deprecated use the property directly instead
 	 */
-	public function getTaskClass () : ?string
+	public function getTaskClass () : string
 	{
-		return $this->getTaskDetails()["class"] ?? null;
+		return $this->taskClass;
 	}
 }

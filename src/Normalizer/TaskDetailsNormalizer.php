@@ -22,7 +22,6 @@ final readonly class TaskDetailsNormalizer
 
 		/** @phpstan-var TaskDetails $details */
 		$details = [
-			"class" => $task::class,
 			"transport" => $envelope->last(ReceivedStamp::class)?->getTransportName(),
 			"handledBy" => $envelope->last(HandledStamp::class)?->getHandlerName(),
 		];
