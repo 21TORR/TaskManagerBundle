@@ -1,10 +1,16 @@
+2.3.4
+=====
+
+* (bug) Add missing run integration for `DispatchAfterRunTaskHandler`.
+
+
 2.3.3
 =====
 
 * (improvement) Simplify task run duration calculation.
 * (improvement) Transform exception to log entry, so that the worker doesn't constantly fail.
 * (deprecation) Deprecate entity getters in favor of properties.
-* (improvement) Add explicit task class field.
+* (improvement) Add explicit task `class` field.
 
 
 2.3.2

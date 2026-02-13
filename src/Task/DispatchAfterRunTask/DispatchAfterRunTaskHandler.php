@@ -4,6 +4,7 @@ namespace Torr\TaskManager\Task\DispatchAfterRunTask;
 
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Stamp\TransportNamesStamp;
+use Torr\TaskManager\Director\TaskDirector;
 use Torr\TaskManager\Manager\TaskManager;
 
 /**
@@ -15,6 +16,7 @@ readonly class DispatchAfterRunTaskHandler
 	 */
 	public function __construct (
 		private TaskManager $taskManager,
+		private TaskDirector $taskDirector,
 	) {}
 
 	/**
@@ -23,10 +25,18 @@ readonly class DispatchAfterRunTaskHandler
 	#[AsMessageHandler]
 	public function onDispatchAfterRunTask (DispatchAfterRunTask $task) : void
 	{
+		$run = $this->taskDirector->startRun($task);
+
+		$run->io->writeln(\sprintf(
+			"Redispatching task <fg=yellow>%s</>",
+			$task->task::class,
+		));
+
 		$stamps = !empty($task->transportNames)
 			? [new TransportNamesStamp($task->transportNames)]
 			: [];
 
 		$this->taskManager->enqueue($task->task, $stamps);
+		$run->finish(success: true);
 	}
 }
