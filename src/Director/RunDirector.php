@@ -10,7 +10,7 @@ use Torr\TaskManager\Model\TaskLogModel;
 
 final class RunDirector
 {
-	private TorrStyle $io;
+	public private(set) TorrStyle $io;
 	private ChainOutput $output;
 
 	/**
