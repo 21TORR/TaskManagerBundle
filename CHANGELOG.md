@@ -1,3 +1,9 @@
+3.1.0
+=====
+
+* (feature) Add option to hide internal tasks in task log model.
+
+
 3.0.0
 =====
 
