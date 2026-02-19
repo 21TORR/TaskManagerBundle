@@ -9,10 +9,14 @@ use Psr\Clock\ClockInterface;
 use Psr\Log\LoggerInterface;
 use Torr\TaskManager\Entity\TaskLog;
 use Torr\TaskManager\Entity\TaskRun;
+use Torr\TaskManager\Task\DispatchAfterRunTask\DispatchAfterRunTask;
 use Torr\TaskManager\Task\Task;
 
 final class TaskLogModel
 {
+	public const bool SHOW_ALL_TASKS = true;
+	public const bool HIDE_INTERNAL_TASKS = false;
+
 	/** @var EntityRepository<TaskLog> */
 	private EntityRepository $repository;
 
@@ -61,17 +65,28 @@ final class TaskLogModel
 	 *
 	 * @return TaskLog[]
 	 */
-	public function getMostRecentEntries (int $limit = 100) : array
+	public function getMostRecentEntries (
+		int $limit = 100,
+		bool $showAll = self::SHOW_ALL_TASKS,
+	) : array
 	{
-		$query = $this->repository->createQueryBuilder("task")
+		$builder = $this->repository->createQueryBuilder("task")
 			->select("task, run")
 			->leftJoin("task.runs", "run")
 			->addOrderBy("task.timeQueued", "DESC")
-			->setMaxResults($limit)
-			->getQuery();
+			->setMaxResults($limit);
+
+		if (self::HIDE_INTERNAL_TASKS === $showAll)
+		{
+			$builder
+				->andWhere("task.taskClass NOT IN (:internalTasks)")
+				->setParameter("internalTasks", [
+					DispatchAfterRunTask::class,
+				]);
+		}
 
 		/** @var TaskLog[] */
-		return (new Paginator($query))
+		return (new Paginator($builder->getQuery()))
 			->getQuery()
 			->getResult();
 	}
