@@ -4,6 +4,7 @@ namespace Torr\TaskManager\Task\DispatchAfterRunTask;
 
 use Symfony\Component\Messenger\Attribute\AsMessage;
 use Torr\TaskManager\Task\Task;
+use Torr\TaskManager\Task\TaskManagerInternalTask;
 use Torr\TaskManager\Task\TaskMetaData;
 use Torr\TaskManager\Transport\TransportsHelper;
 
@@ -14,7 +15,7 @@ use Torr\TaskManager\Transport\TransportsHelper;
  * redispatches the given task.
  */
 #[AsMessage(transport: TransportsHelper::INTERNAL_TRANSPORT_NAME)]
-readonly class DispatchAfterRunTask extends Task
+readonly class DispatchAfterRunTask extends Task implements TaskManagerInternalTask
 {
 	public function __construct (
 		public Task $task,
