@@ -246,7 +246,7 @@ final class TaskLogCommand extends Command
 	}
 
 	/**
-	 *
+	 * @param float $value The duration in nanoseconds
 	 */
 	private function formatDuration (float $value) : string
 	{
