@@ -15,7 +15,7 @@ abstract readonly class Task
 	 */
 	public function __construct ()
 	{
-		$this->ulid = (new Ulid())->toBase58();
+		$this->ulid = new Ulid()->toBase58();
 	}
 
 	/**
@@ -25,4 +25,14 @@ abstract readonly class Task
 	 * serialized messages as well.
 	 */
 	abstract public function getMetaData () : TaskMetaData;
+
+	/**
+	 *
+	 */
+	public function withNewTaskUlid () : static
+	{
+		return clone($this, [
+			"ulid" => new Ulid()->toBase58(),
+		]);
+	}
 }

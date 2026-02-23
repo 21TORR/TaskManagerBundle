@@ -2,9 +2,12 @@
 
 namespace Torr\TaskManager\Task\DispatchAfterRunTask;
 
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Output\ConsoleOutput;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Stamp\TransportNamesStamp;
-use Torr\TaskManager\Director\TaskDirector;
+use Torr\Cli\Console\Style\TorrStyle;
 use Torr\TaskManager\Manager\TaskManager;
 
 /**
@@ -16,7 +19,6 @@ readonly class DispatchAfterRunTaskHandler
 	 */
 	public function __construct (
 		private TaskManager $taskManager,
-		private TaskDirector $taskDirector,
 	) {}
 
 	/**
@@ -25,9 +27,13 @@ readonly class DispatchAfterRunTaskHandler
 	#[AsMessageHandler]
 	public function onDispatchAfterRunTask (DispatchAfterRunTask $task) : void
 	{
-		$run = $this->taskDirector->startRun($task);
+		// DispatchAfterRun message should not use the task director, as we can't recreate the task ulid.
+		$io = new TorrStyle(
+			new ArrayInput([]),
+			new ConsoleOutput(OutputInterface::VERBOSITY_NORMAL, true),
+		);
 
-		$run->io->writeln(\sprintf(
+		$io->writeln(\sprintf(
 			"Redispatching task <fg=yellow>%s</>",
 			$task->task::class,
 		));
@@ -36,7 +42,7 @@ readonly class DispatchAfterRunTaskHandler
 			? [new TransportNamesStamp($task->transportNames)]
 			: [];
 
-		$this->taskManager->enqueue($task->task, $stamps);
-		$run->finish(success: true);
+		$wrappedTask = $task->task->withNewTaskUlid();
+		$this->taskManager->enqueue($wrappedTask, $stamps);
 	}
 }

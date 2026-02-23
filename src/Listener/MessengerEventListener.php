@@ -10,6 +10,7 @@ use Symfony\Component\Messenger\Event\WorkerMessageHandledEvent;
 use Torr\TaskManager\Entity\TaskLog;
 use Torr\TaskManager\Model\TaskLogModel;
 use Torr\TaskManager\Normalizer\TaskDetailsNormalizer;
+use Torr\TaskManager\Task\DispatchAfterRunTask\DispatchAfterRunTask;
 use Torr\TaskManager\Task\Task;
 
 /**
@@ -25,16 +26,17 @@ final readonly class MessengerEventListener
 	/**
 	 *
 	 */
-	#[AsEventListener(SendMessageToTransportsEvent::class)]
+	#[AsEventListener]
 	public function onSendMessageToTransports (SendMessageToTransportsEvent $event) : void
 	{
-		$taskLog = $this->getLogForEvent($event->getEnvelope());
+		$envelope = $event->getEnvelope();
+		$taskLog = $this->getLogForEvent($envelope);
 
 		// make sure that the log entry is created and flushed
 		if (null !== $taskLog)
 		{
 			// update envelope with current version
-			$taskLog->setTaskDetails($this->detailsNormalizer->normalizeTaskDetails($event->getEnvelope()));
+			$taskLog->setTaskDetails($this->detailsNormalizer->normalizeTaskDetails($envelope));
 
 			$this->logModel->flush();
 		}
@@ -43,10 +45,11 @@ final readonly class MessengerEventListener
 	/**
 	 * Automatically integrate
 	 */
-	#[AsEventListener(WorkerMessageHandledEvent::class)]
+	#[AsEventListener]
 	public function onWorkerMessageHandled (WorkerMessageHandledEvent $event) : void
 	{
-		$taskLog = $this->getLogForEvent($event->getEnvelope());
+		$envelope = $event->getEnvelope();
+		$taskLog = $this->getLogForEvent($envelope);
 
 		if (null === $taskLog)
 		{
@@ -54,7 +57,7 @@ final readonly class MessengerEventListener
 		}
 
 		// update envelope with current version
-		$taskLog->setTaskDetails($this->detailsNormalizer->normalizeTaskDetails($event->getEnvelope()));
+		$taskLog->setTaskDetails($this->detailsNormalizer->normalizeTaskDetails($envelope));
 
 		// abort run as success. It wasn't marked as finished manually, but it succeeded nonetheless.
 		$run = $taskLog->getLastUnfinishedRun();
@@ -63,10 +66,11 @@ final readonly class MessengerEventListener
 		$this->logModel->flush();
 	}
 
-	#[AsEventListener(WorkerMessageFailedEvent::class)]
+	#[AsEventListener]
 	public function onWorkerMessageFailed (WorkerMessageFailedEvent $event) : void
 	{
-		$taskLog = $this->getLogForEvent($event->getEnvelope());
+		$envelope = $event->getEnvelope();
+		$taskLog = $this->getLogForEvent($envelope);
 
 		if (null === $taskLog)
 		{
@@ -74,7 +78,7 @@ final readonly class MessengerEventListener
 		}
 
 		// update envelope with current version
-		$taskLog->setTaskDetails($this->detailsNormalizer->normalizeTaskDetails($event->getEnvelope()));
+		$taskLog->setTaskDetails($this->detailsNormalizer->normalizeTaskDetails($envelope));
 
 		// abort run as failure. It wasn't marked as finished manually and it failed.
 		$run = $taskLog->getLastUnfinishedRun();
@@ -90,7 +94,7 @@ final readonly class MessengerEventListener
 	{
 		$message = $envelope->getMessage();
 
-		return $message instanceof Task
+		return $message instanceof Task && !$message instanceof DispatchAfterRunTask
 			? $this->logModel->getLogForTask($message)
 			: null;
 	}
