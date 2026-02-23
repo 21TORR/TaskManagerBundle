@@ -32,21 +32,10 @@ final readonly class CleanOutdatedLogsTaskHandler
 
 		$deletedEntries = $this->logCleaner->cleanLogEntries();
 
-		if ([] === $deletedEntries)
-		{
-			$io->success("No entries to remove found");
-			$run->finish(true);
-
-			return;
-		}
-
-		$io->writeln("Removed:");
-		$io->listing($deletedEntries);
-
 		$io->success(\sprintf(
-			"Deleted <fg=yellow>%d</> %s:",
-			\count($deletedEntries),
-			1 !== \count($deletedEntries)
+			"Deleted %d %s",
+			$deletedEntries,
+			1 !== $deletedEntries
 				? "entries"
 				: "entry",
 		));
