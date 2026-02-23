@@ -156,7 +156,11 @@ class TaskLog
 	{
 		if ($this->isSuccess())
 		{
-			throw new InvalidLogActionException("Can't start a run for a task #{$this->id} that is already finished.");
+			throw new InvalidLogActionException(\sprintf(
+				"Can't start a run for a task #%s (task id: '%s') that is already finished.",
+				$this->id,
+				$this->taskId,
+			));
 		}
 
 		$run = new TaskRun($this, $logger);
