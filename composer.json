@@ -11,7 +11,7 @@
 	],
 	"homepage": "https://github.com/21TORR/TaskManagerBundle",
 	"require": {
-		"php": ">= 8.4",
+		"php": ">= 8.5",
 		"21torr/bundle-helpers": "^2.3.1",
 		"21torr/cli": "^1.2.3",
 		"21torr/hosting": "^4.1.1",

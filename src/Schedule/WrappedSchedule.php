@@ -81,7 +81,6 @@ readonly class WrappedSchedule implements ScheduleProviderInterface
 	#[\Override]
 	public function getSchedule () : Schedule
 	{
-		dump("get internal schedule");
 		return $this->schedule->getSchedule();
 	}
 }

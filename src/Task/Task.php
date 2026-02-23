@@ -15,7 +15,7 @@ abstract readonly class Task
 	 */
 	public function __construct ()
 	{
-		$this->ulid = (new Ulid())->toBase58();
+		$this->ulid = new Ulid()->toBase58();
 	}
 
 	/**
@@ -31,14 +31,8 @@ abstract readonly class Task
 	 */
 	public function withNewTaskUlid () : static
 	{
-		if (\function_exists("clone") && \PHP_VERSION_ID >= 80500)
-		{
-			return clone($this, [
-				"ulid" => (new Ulid())->toBase58()
-			]);
-		}
-
-		// @todo remove fallback + if above, when PHP 8.5 is required
-		return $this;
+		return clone($this, [
+			"ulid" => new Ulid()->toBase58(),
+		]);
 	}
 }

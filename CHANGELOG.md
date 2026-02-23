@@ -1,3 +1,11 @@
+3.2.0
+=====
+
+* (feature) Add `TaskScheduler`.
+* (improvement) Update task ULID when redispatching in the scheduler.
+* (improvement) Require PHP 8.5+
+
+
 3.1.1
 =====
 
