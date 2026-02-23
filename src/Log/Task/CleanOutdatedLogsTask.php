@@ -5,7 +5,7 @@ namespace Torr\TaskManager\Log\Task;
 use Torr\TaskManager\Task\Task;
 use Torr\TaskManager\Task\TaskMetaData;
 
-final readonly class CleanOutdatedLogsTask extends Task implements \Stringable
+final readonly class CleanOutdatedLogsTask extends Task
 {
 	/**
 	 * @inheritDoc
@@ -17,13 +17,5 @@ final readonly class CleanOutdatedLogsTask extends Task implements \Stringable
 			group: "Task Manager",
 			uniqueTaskId: "task-manager.clean-log",
 		);
-	}
-
-	/**
-	 *
-	 */
-	public function __toString () : string
-	{
-		return $this->getMetaData()->label;
 	}
 }

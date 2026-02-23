@@ -10,8 +10,8 @@ use Symfony\Component\Messenger\Event\WorkerMessageHandledEvent;
 use Torr\TaskManager\Entity\TaskLog;
 use Torr\TaskManager\Model\TaskLogModel;
 use Torr\TaskManager\Normalizer\TaskDetailsNormalizer;
-use Torr\TaskManager\Task\DispatchAfterRunTask\DispatchAfterRunTask;
 use Torr\TaskManager\Task\Task;
+use Torr\TaskManager\Task\TaskManagerInternalTask;
 
 /**
  * Integrates into the Symfony messenger event to automate certain integrations
@@ -94,7 +94,8 @@ final readonly class MessengerEventListener
 	{
 		$message = $envelope->getMessage();
 
-		return $message instanceof Task && !$message instanceof DispatchAfterRunTask
+		// filter out task manager internal tasks
+		return $message instanceof Task && !$message instanceof TaskManagerInternalTask
 			? $this->logModel->getLogForTask($message)
 			: null;
 	}

@@ -7,6 +7,7 @@ use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Torr\BundleHelpers\Bundle\BundleExtension;
 use Torr\TaskManager\Config\BundleConfig;
 use Torr\TaskManager\Log\LogCleaner;
+use Torr\TaskManager\Log\Task\CleanOutdatedLogsTask;
 use Torr\TaskManager\Task\DispatchAfterRunTask\DispatchAfterRunTask;
 use Torr\TaskManager\Transport\TransportsHelper;
 
@@ -49,6 +50,7 @@ class TaskManagerBundleExtension extends BundleExtension implements PrependExten
 				],
 				"routing" => [
 					DispatchAfterRunTask::class => TransportsHelper::INTERNAL_TRANSPORT_NAME,
+					CleanOutdatedLogsTask::class => "app",
 				],
 			],
 		]);

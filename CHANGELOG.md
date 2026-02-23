@@ -1,3 +1,11 @@
+3.2.2
+=====
+
+* (internal) Add `TaskManagerInternalTask` as internal marker interface.
+* (improvement) Heavily reduce memory usage of clean outdated task log implementation.
+* (improvement) Work on clean outdatet task log asynchronously in `app` transport.
+
+
 3.2.1
 =====
 

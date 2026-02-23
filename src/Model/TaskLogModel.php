@@ -5,7 +5,6 @@ namespace Torr\TaskManager\Model;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Tools\Pagination\Paginator;
-use Psr\Clock\ClockInterface;
 use Psr\Log\LoggerInterface;
 use Torr\TaskManager\Entity\TaskLog;
 use Torr\TaskManager\Entity\TaskRun;
@@ -24,7 +23,6 @@ final class TaskLogModel
 	 */
 	public function __construct (
 		private readonly EntityManagerInterface $entityManager,
-		private readonly ClockInterface $clock,
 		private readonly LoggerInterface $logger,
 	)
 	{
@@ -58,6 +56,14 @@ final class TaskLogModel
 		$this->entityManager->persist($log);
 
 		return $log;
+	}
+
+	/**
+	 *
+	 */
+	public function getTaskCount () : int
+	{
+		return $this->repository->count();
 	}
 
 	/**
@@ -100,65 +106,6 @@ final class TaskLogModel
 		$this->entityManager->persist($run);
 
 		return $run;
-	}
-
-	/**
-	 * @return list<TaskLog>
-	 */
-	public function fetchOutdatedTasks (
-		int $maxAgeInDays,
-		int $maxEntries,
-	) : array
-	{
-		// start with a fixed TTL
-		$purgeBefore = $this->clock->now()
-			->sub(new \DateInterval("P{$maxAgeInDays}D"));
-
-		// check whether the last entry at "max entries" would be newer than the
-		// TTL. If so, then adjust the purge date, to fulfill both
-		$cutOffEntry = $this->getCutoffEntry($maxEntries);
-
-		if (null !== $cutOffEntry && $cutOffEntry->timeQueued > $purgeBefore)
-		{
-			$purgeBefore = $cutOffEntry->timeQueued;
-		}
-
-		/** @var TaskLog[] $entries */
-		$entries = $this->repository->createQueryBuilder("task")
-			->select("task, run")
-			->leftJoin("task.runs", "run")
-			->where("task.timeQueued <= :oldestTimestamp")
-			->setParameter("oldestTimestamp", $purgeBefore)
-			->getQuery()
-			->getResult();
-
-		$filtered = [];
-
-		foreach ($entries as $entry)
-		{
-			if ($entry->isFinished())
-			{
-				$filtered[] = $entry;
-			}
-		}
-
-		return $filtered;
-	}
-
-	/**
-	 *
-	 */
-	private function getCutoffEntry (int $maxEntries) : ?TaskLog
-	{
-		/** @var TaskLog[] $result */
-		$result = $this->repository->createQueryBuilder("task")
-		->addOrderBy("task.timeQueued", "DESC")
-		->setFirstResult($maxEntries)
-		->setMaxResults(1)
-		->getQuery()
-		->getResult();
-
-		return $result[0] ?? null;
 	}
 
 	/**
