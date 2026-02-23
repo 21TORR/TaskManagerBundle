@@ -37,7 +37,7 @@ class TaskRun
 	public private(set) \DateTimeImmutable $timeStarted;
 
 	/**
-	 *
+	 * The duration of the run in nanoseconds
 	 */
 	#[ORM\Column(type: Types::FLOAT, nullable: true)]
 	public private(set) ?float $duration = null;

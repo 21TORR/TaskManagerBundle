@@ -20,6 +20,6 @@ readonly class DurationCalculator
 			+ $diff->s
 			+ $diff->f;
 
-		return $seconds / 1e9;
+		return $seconds * 1e9;
 	}
 }

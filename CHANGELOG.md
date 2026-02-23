@@ -1,3 +1,9 @@
+3.1.1
+=====
+
+* (bug) Fix invalid task run duration calculation.
+
+
 3.1.0
 =====
 
