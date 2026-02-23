@@ -25,4 +25,20 @@ abstract readonly class Task
 	 * serialized messages as well.
 	 */
 	abstract public function getMetaData () : TaskMetaData;
+
+	/**
+	 *
+	 */
+	public function withNewTaskUlid () : static
+	{
+		if (\function_exists("clone") && \PHP_VERSION_ID >= 80500)
+		{
+			return clone($this, [
+				"ulid" => (new Ulid())->toBase58()
+			]);
+		}
+
+		// @todo remove fallback + if above, when PHP 8.5 is required
+		return $this;
+	}
 }
