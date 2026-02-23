@@ -1,3 +1,10 @@
+3.2.1
+=====
+
+* (improvement) Rename internal schedule to `TaskManagerInternalSchedule`.
+* (improvement) Remove code, that was deprecated in `2.x`.
+
+
 3.2.0
 =====
 
