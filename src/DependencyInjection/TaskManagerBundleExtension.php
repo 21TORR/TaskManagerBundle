@@ -28,15 +28,8 @@ class TaskManagerBundleExtension extends BundleExtension implements PrependExten
 		$container->getDefinition(BundleConfig::class)
 			->setArgument('$sortedQueues', $config["queues"]);
 
-		// if the new value was customized, use it. Otherwise keep using
-		// the old value. If none is set, they use the same default, so everything
-		// is fine.
-		$logTtl = 28 !== $config["log"]["ttl"]
-			? $config["log"]["ttl"]
-			: $config["log_ttl"];
-
 		$container->getDefinition(LogCleaner::class)
-			->setArgument('$logTtlInDays', $logTtl)
+			->setArgument('$logTtlInDays', $config["log"]["ttl"])
 			->setArgument('$logMaxEntries', $config["log"]["max_entries"]);
 	}
 
