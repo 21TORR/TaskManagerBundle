@@ -9,19 +9,21 @@ use Symfony\Component\Scheduler\ScheduleProviderInterface;
 use Torr\TaskManager\Log\Task\CleanOutdatedLogsTask;
 
 #[AsSchedule("task_manager")]
-final readonly class TaskManagerSchedule implements ScheduleProviderInterface
+final readonly class TaskManagerInternalSchedule implements ScheduleProviderInterface
 {
+	/**
+	 */
+	public function __construct (
+		private TaskScheduler $scheduler,
+	) {}
+
 	/**
 	 *
 	 */
 	public function getSchedule () : Schedule
 	{
-		return (new Schedule())
-			->with(
-				RecurringMessage::cron(
-					"#daily",
-					new CleanOutdatedLogsTask(),
-				),
-			);
+		return $this->scheduler->createSchedule()
+			->every("15 minutes", new CleanOutdatedLogsTask())
+			->getSchedule();
 	}
 }

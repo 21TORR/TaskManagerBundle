@@ -1,3 +1,9 @@
+3.2.1
+=====
+
+* (improvement) Rename internal schedule to `TaskManagerInternalSchedule`.
+
+
 3.2.0
 =====
 
