@@ -22,9 +22,9 @@ readonly class TaskScheduler
 	/**
 	 *
 	 */
-	public function createSchedule () : InternalTaskManagerSchedule
+	public function createSchedule () : WrappedSchedule
 	{
-		return new InternalTaskManagerSchedule(
+		return new WrappedSchedule(
 			$this->cache,
 			$this->lockFactory->createLock(self::LOCK_KEY),
 		);

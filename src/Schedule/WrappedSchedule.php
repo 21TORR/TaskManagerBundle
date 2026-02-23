@@ -17,7 +17,7 @@ use Torr\TaskManager\Task\Task;
  *
  * @internal
  */
-readonly class InternalTaskManagerSchedule implements ScheduleProviderInterface
+readonly class WrappedSchedule implements ScheduleProviderInterface
 {
 	/**
 	 *
@@ -81,6 +81,7 @@ readonly class InternalTaskManagerSchedule implements ScheduleProviderInterface
 	#[\Override]
 	public function getSchedule () : Schedule
 	{
+		dump("get internal schedule");
 		return $this->schedule->getSchedule();
 	}
 }
