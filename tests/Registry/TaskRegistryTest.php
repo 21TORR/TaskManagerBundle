@@ -41,7 +41,7 @@ final class TaskRegistryTest extends TestCase
 	 */
 	private function createRegistry (array $tasks) : TaskRegistry
 	{
-		$dispatcher = $this->createStub(EventDispatcherInterface::class);
+		$dispatcher = self::createStub(EventDispatcherInterface::class);
 		$dispatcher->method("dispatch")->willReturnCallback(
 			static function (RegisterTasksEvent $event) use ($tasks) : RegisterTasksEvent
 			{

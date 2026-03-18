@@ -47,8 +47,8 @@ final class TaskDetailsNormalizerTest extends TestCase
 	) : TaskDetailsNormalizer
 	{
 		return new TaskDetailsNormalizer(
-			$serializer ?? $this->createStub(SerializerInterface::class),
-			$logger ?? $this->createStub(LoggerInterface::class),
+			$serializer ?? self::createStub(SerializerInterface::class),
+			$logger ?? self::createStub(LoggerInterface::class),
 		);
 	}
 
@@ -146,7 +146,7 @@ final class TaskDetailsNormalizerTest extends TestCase
 		$log = new TaskLog($task);
 		$log->setTaskDetails(["task" => "{}'"]);
 
-		$serializer = $this->createStub(SerializerInterface::class);
+		$serializer = self::createStub(SerializerInterface::class);
 		$serializer->method("deserialize")->willReturn(new \stdClass());
 
 		$result = $this->createNormalizer($serializer)->deserializeTask($log);
@@ -160,7 +160,7 @@ final class TaskDetailsNormalizerTest extends TestCase
 		$log = new TaskLog($task);
 		$log->setTaskDetails(["task" => "invalid-json"]);
 
-		$serializer = $this->createStub(SerializerInterface::class);
+		$serializer = self::createStub(SerializerInterface::class);
 		$serializer->method("deserialize")->willThrowException(new NotEncodableValueException("bad json"));
 
 		$logger = $this->createMock(LoggerInterface::class);

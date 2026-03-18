@@ -50,13 +50,20 @@ final class TaskManagerTest extends TestCase
 	{
 		return new class($envelopes) implements TransportInterface, ListableReceiverInterface {
 			/** @param Envelope[] $envelopes */
-			public function __construct (private readonly array $envelopes) {}
+			public function __construct (
+				private readonly array $envelopes,
+			) {}
 
 			public function all (?int $limit = null) : iterable { return $this->envelopes; }
+
 			public function find (mixed $id) : Envelope { throw new \RuntimeException("Not implemented"); }
+
 			public function get () : iterable { return []; }
+
 			public function ack (Envelope $envelope) : void {}
+
 			public function reject (Envelope $envelope) : void {}
+
 			public function send (Envelope $envelope) : Envelope { return $envelope; }
 		};
 	}
@@ -95,7 +102,7 @@ final class TaskManagerTest extends TestCase
 
 	public function testEnqueueReturnsTrueWhenNoConflict () : void
 	{
-		$bus = $this->createStub(MessageBusInterface::class);
+		$bus = self::createStub(MessageBusInterface::class);
 		$bus->method("dispatch")->willReturnArgument(0);
 
 		$manager = $this->createManager(["queue" => $this->createListableTransport()], $bus);
@@ -151,7 +158,7 @@ final class TaskManagerTest extends TestCase
 	{
 		$capturedEnvelope = null;
 
-		$bus = $this->createStub(MessageBusInterface::class);
+		$bus = self::createStub(MessageBusInterface::class);
 		$bus->method("dispatch")->willReturnCallback(
 			static function (Envelope $envelope) use (&$capturedEnvelope) : Envelope
 			{

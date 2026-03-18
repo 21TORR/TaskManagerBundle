@@ -37,7 +37,7 @@ final class LogCleanerTest extends TestCase
 	 */
 	private function createQueryBuilderStub (Query $query) : QueryBuilder
 	{
-		$qb = $this->createStub(QueryBuilder::class);
+		$qb = self::createStub(QueryBuilder::class);
 
 		foreach (["select", "from", "leftJoin", "where", "andWhere", "setParameter", "addOrderBy", "setFirstResult", "setMaxResults", "delete"] as $method)
 		{
@@ -51,7 +51,7 @@ final class LogCleanerTest extends TestCase
 
 	private function createCutoffQuery (?TaskLog $cutoffEntry) : Query
 	{
-		$query = $this->createStub(Query::class);
+		$query = self::createStub(Query::class);
 		$query->method("getResult")->willReturn(null !== $cutoffEntry ? [$cutoffEntry] : []);
 
 		return $query;
@@ -61,7 +61,7 @@ final class LogCleanerTest extends TestCase
 	{
 		$rows = array_map(static fn (int $id) => ["id" => $id], $ids);
 
-		$query = $this->createStub(Query::class);
+		$query = self::createStub(Query::class);
 		$query->method("getArrayResult")->willReturn($rows);
 
 		return $query;
@@ -72,7 +72,7 @@ final class LogCleanerTest extends TestCase
 	 */
 	private function createCapturingFetchQb (mixed &$capturedOldestTimestamp) : QueryBuilder
 	{
-		$fetchQb = $this->createStub(QueryBuilder::class);
+		$fetchQb = self::createStub(QueryBuilder::class);
 
 		foreach (["select", "from", "leftJoin", "where", "andWhere", "addOrderBy", "setFirstResult", "setMaxResults", "delete"] as $method)
 		{
@@ -81,7 +81,7 @@ final class LogCleanerTest extends TestCase
 
 		$fetchQb->method("setParameter")
 			->willReturnCallback(
-				function (string $key, mixed $value) use ($fetchQb, &$capturedOldestTimestamp) : QueryBuilder
+				static function (string $key, mixed $value) use ($fetchQb, &$capturedOldestTimestamp) : QueryBuilder
 				{
 					if ("oldestTimestamp" === $key)
 					{
@@ -101,14 +101,14 @@ final class LogCleanerTest extends TestCase
 
 	public function testGetMaxLogEntryAge () : void
 	{
-		$cleaner = new LogCleaner(30, 100, $this->createStub(EntityManagerInterface::class), new MockClock());
+		$cleaner = new LogCleaner(30, 100, self::createStub(EntityManagerInterface::class), new MockClock());
 
 		self::assertSame(30, $cleaner->getMaxLogEntryAge());
 	}
 
 	public function testGetMaxLogEntryNumber () : void
 	{
-		$cleaner = new LogCleaner(30, 100, $this->createStub(EntityManagerInterface::class), new MockClock());
+		$cleaner = new LogCleaner(30, 100, self::createStub(EntityManagerInterface::class), new MockClock());
 
 		self::assertSame(100, $cleaner->getMaxLogEntryNumber());
 	}
@@ -131,7 +131,7 @@ final class LogCleanerTest extends TestCase
 
 	public function testCleanLogEntriesReturnsCountAndRunsDeletes () : void
 	{
-		$deleteQuery = $this->createStub(Query::class);
+		$deleteQuery = self::createStub(Query::class);
 
 		$em = $this->createMock(EntityManagerInterface::class);
 		// 4 QueryBuilders: getCutoffEntry + fetchIdsToDelete + deleteRuns + deleteTasks
@@ -159,7 +159,7 @@ final class LogCleanerTest extends TestCase
 
 		$capturedOldestTimestamp = null;
 
-		$em = $this->createStub(EntityManagerInterface::class);
+		$em = self::createStub(EntityManagerInterface::class);
 		$em->method("createQueryBuilder")
 			->willReturnOnConsecutiveCalls(
 				$this->createQueryBuilderStub($this->createCutoffQuery($cutoffEntry)),
@@ -179,7 +179,7 @@ final class LogCleanerTest extends TestCase
 
 		$capturedOldestTimestamp = null;
 
-		$em = $this->createStub(EntityManagerInterface::class);
+		$em = self::createStub(EntityManagerInterface::class);
 		$em->method("createQueryBuilder")
 			->willReturnOnConsecutiveCalls(
 				$this->createQueryBuilderStub($this->createCutoffQuery(null)),
