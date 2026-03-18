@@ -3,6 +3,7 @@
 namespace Tests\Torr\TaskManager\Console;
 
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Torr\TaskManager\Console\ChainOutput;
 
@@ -13,7 +14,7 @@ final class ChainOutputTest extends TestCase
 {
 	public function testWriteIsBuffered () : void
 	{
-		$output = new ChainOutput();
+		$output = new ChainOutput(mainOutput: new NullOutput());
 		$output->write("hello");
 
 		self::assertSame("hello", $output->getBufferedOutput());
@@ -21,7 +22,7 @@ final class ChainOutputTest extends TestCase
 
 	public function testWritelnIsBuffered () : void
 	{
-		$output = new ChainOutput();
+		$output = new ChainOutput(mainOutput: new NullOutput());
 		$output->writeln("hello");
 
 		self::assertSame("hello\n", $output->getBufferedOutput());
@@ -29,7 +30,7 @@ final class ChainOutputTest extends TestCase
 
 	public function testBufferedOutputIsConsumedOnFetch () : void
 	{
-		$output = new ChainOutput();
+		$output = new ChainOutput(mainOutput: new NullOutput());
 		$output->write("hello");
 
 		$output->getBufferedOutput();
@@ -39,7 +40,7 @@ final class ChainOutputTest extends TestCase
 
 	public function testSetAndGetVerbosity () : void
 	{
-		$output = new ChainOutput();
+		$output = new ChainOutput(mainOutput: new NullOutput());
 		$output->setVerbosity(OutputInterface::VERBOSITY_VERBOSE);
 
 		self::assertSame(OutputInterface::VERBOSITY_VERBOSE, $output->getVerbosity());

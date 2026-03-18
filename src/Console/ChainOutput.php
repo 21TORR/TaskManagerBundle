@@ -9,7 +9,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 final readonly class ChainOutput implements OutputInterface
 {
-	private ConsoleOutput $consoleOutput;
+	private OutputInterface $mainOutput;
 	private BufferedOutput $bufferedOutput;
 
 	/**
@@ -18,10 +18,19 @@ final readonly class ChainOutput implements OutputInterface
 		int $verbosity = self::VERBOSITY_NORMAL,
 		bool $decorated = true,
 		?OutputFormatterInterface $formatter = null,
+		?OutputInterface $mainOutput = null,
 	)
 	{
 		$this->bufferedOutput = new BufferedOutput($verbosity, $decorated, $formatter);
-		$this->consoleOutput = new ConsoleOutput($verbosity, $decorated, $formatter);
+
+		$this->mainOutput = $mainOutput ?? new ConsoleOutput();
+		$this->mainOutput->setDecorated($decorated);
+		$this->mainOutput->setVerbosity($verbosity);
+
+		if (null !== $formatter)
+		{
+			$this->mainOutput->setFormatter($formatter);
+		}
 	}
 
 	/**
@@ -31,7 +40,7 @@ final readonly class ChainOutput implements OutputInterface
 	public function write (iterable|string $messages, bool $newline = false, int $options = 0) : void
 	{
 		$this->bufferedOutput->write($messages, $newline, $options);
-		$this->consoleOutput->write($messages, $newline, $options);
+		$this->mainOutput->write($messages, $newline, $options);
 	}
 
 	/**
@@ -41,7 +50,7 @@ final readonly class ChainOutput implements OutputInterface
 	public function writeln (iterable|string $messages, int $options = 0) : void
 	{
 		$this->bufferedOutput->writeln($messages, $options);
-		$this->consoleOutput->writeln($messages, $options);
+		$this->mainOutput->writeln($messages, $options);
 	}
 
 	/**
@@ -51,7 +60,7 @@ final readonly class ChainOutput implements OutputInterface
 	public function setVerbosity (int $level) : void
 	{
 		$this->bufferedOutput->setVerbosity($level);
-		$this->consoleOutput->setVerbosity($level);
+		$this->mainOutput->setVerbosity($level);
 	}
 
 	/**
@@ -114,7 +123,7 @@ final readonly class ChainOutput implements OutputInterface
 	public function setDecorated (bool $decorated) : void
 	{
 		$this->bufferedOutput->setDecorated($decorated);
-		$this->consoleOutput->setDecorated($decorated);
+		$this->mainOutput->setDecorated($decorated);
 	}
 
 	/**
@@ -132,7 +141,7 @@ final readonly class ChainOutput implements OutputInterface
 	public function setFormatter (OutputFormatterInterface $formatter) : void
 	{
 		$this->bufferedOutput->setFormatter($formatter);
-		$this->consoleOutput->setFormatter($formatter);
+		$this->mainOutput->setFormatter($formatter);
 	}
 
 	/**
