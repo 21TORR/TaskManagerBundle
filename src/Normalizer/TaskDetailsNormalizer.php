@@ -6,6 +6,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Stamp\HandledStamp;
 use Symfony\Component\Messenger\Stamp\ReceivedStamp;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Exception\ExceptionInterface as SerializerException;
 use Symfony\Component\Serializer\SerializerInterface;
 use Torr\TaskManager\Entity\TaskLog;
@@ -37,7 +38,7 @@ final readonly class TaskDetailsNormalizer
 		if ($task instanceof Task)
 		{
 			$details["label"] = $task->getMetaData()->label;
-			$details["task"] = $this->serializer->serialize($task, "json");
+			$details["task"] = $this->serializer->serialize($task, JsonEncoder::FORMAT);
 		}
 
 		return $details;
@@ -57,7 +58,7 @@ final readonly class TaskDetailsNormalizer
 
 		try
 		{
-			$task = $this->serializer->deserialize($serialized, $log->taskClass, "json");
+			$task = $this->serializer->deserialize($serialized, $log->taskClass, JsonEncoder::FORMAT);
 
 			return $task instanceof Task ? $task : null;
 		}
