@@ -58,14 +58,6 @@ final class TaskLogModel
 	}
 
 	/**
-	 *
-	 */
-	public function getTaskCount () : int
-	{
-		return $this->repository->count();
-	}
-
-	/**
 	 * Returns the latest task log entries
 	 *
 	 * @return TaskLog[]

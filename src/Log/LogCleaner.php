@@ -6,14 +6,12 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Clock\ClockInterface;
 use Torr\TaskManager\Entity\TaskLog;
 use Torr\TaskManager\Entity\TaskRun;
-use Torr\TaskManager\Model\TaskLogModel;
 
 final readonly class LogCleaner
 {
 	public function __construct (
 		private int $logTtlInDays,
 		private int $logMaxEntries,
-		private TaskLogModel $model,
 		private EntityManagerInterface $entityManager,
 		private ClockInterface $clock,
 	) {}
@@ -23,9 +21,12 @@ final readonly class LogCleaner
 	 */
 	public function cleanLogEntries () : int
 	{
-		$tasksBefore = $this->model->getTaskCount();
-
 		$taskIdToDelete = $this->fetchIdsToDelete();
+
+		if (empty($taskIdToDelete))
+		{
+			return 0;
+		}
 
 		// first delete runs, as they are a foreign key on the task logs
 		$this->deleteRuns($taskIdToDelete);
@@ -33,11 +34,7 @@ final readonly class LogCleaner
 		// then delete tasks
 		$this->deleteTasks($taskIdToDelete);
 
-		$tasksAfter = $this->model->getTaskCount();
-
-		return $tasksBefore > $tasksAfter
-			? ($tasksBefore - $tasksAfter)
-			: 0;
+		return \count($taskIdToDelete);
 	}
 
 	/**
