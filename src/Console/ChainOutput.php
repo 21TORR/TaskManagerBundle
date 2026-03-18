@@ -113,8 +113,8 @@ final readonly class ChainOutput implements OutputInterface
 	#[\Override]
 	public function setDecorated (bool $decorated) : void
 	{
-		$this->bufferedOutput->setDecorated(true);
-		$this->consoleOutput->setDecorated(true);
+		$this->bufferedOutput->setDecorated($decorated);
+		$this->consoleOutput->setDecorated($decorated);
 	}
 
 	/**
