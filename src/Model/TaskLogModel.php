@@ -4,7 +4,6 @@ namespace Torr\TaskManager\Model;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
-use Doctrine\ORM\Tools\Pagination\Paginator;
 use Psr\Log\LoggerInterface;
 use Torr\TaskManager\Entity\TaskLog;
 use Torr\TaskManager\Entity\TaskRun;
@@ -92,9 +91,7 @@ final class TaskLogModel
 		}
 
 		/** @var TaskLog[] */
-		return (new Paginator($builder->getQuery()))
-			->getQuery()
-			->getResult();
+		return $builder->getQuery()->getResult();
 	}
 
 	/**

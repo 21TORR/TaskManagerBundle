@@ -3,6 +3,7 @@
 
 * (bug) Fix stamps passed to `TaskManager::enqueue()` being silently dropped due to `Envelope::with()` being immutable.
 * (improvement) Add database index on `time_queued` column of `task_manager_tasks` for faster log queries and cleanup.
+* (internal) Remove unused `Paginator` wrapper in `TaskLogModel::getMostRecentEntries()`.
 
 
 3.2.3
