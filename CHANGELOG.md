@@ -1,3 +1,9 @@
+3.2.4
+=====
+
+* (bug) Fix stamps passed to `TaskManager::enqueue()` being silently dropped due to `Envelope::with()` being immutable.
+
+
 3.2.3
 =====
 
