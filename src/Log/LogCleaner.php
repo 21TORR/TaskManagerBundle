@@ -42,27 +42,11 @@ final readonly class LogCleaner
 	 */
 	private function deleteRuns (array $taskIdsToDelete) : void
 	{
-		$runIdsToDelete = $this->entityManager->createQueryBuilder()
-			->select("run.id")
-			->from(TaskRun::class, "run")
-			->leftJoin("run.taskLog", "task")
-			->andWhere("task.id IN (:taskIds)")
-			->setParameter("taskIds", $taskIdsToDelete)
-			->getQuery()
-			->getArrayResult();
-
-		if (empty($runIdsToDelete))
-		{
-			return;
-		}
-
-		$runIdsToDelete = array_column($runIdsToDelete, "id");
-
 		$this->entityManager->createQueryBuilder()
 			->delete()
 			->from(TaskRun::class, "run")
-			->andWhere("run.id IN (:runIds)")
-			->setParameter("runIds", $runIdsToDelete)
+			->andWhere("IDENTITY(run.taskLog) IN (:taskIds)")
+			->setParameter("taskIds", $taskIdsToDelete)
 			->getQuery()
 			->execute();
 	}
