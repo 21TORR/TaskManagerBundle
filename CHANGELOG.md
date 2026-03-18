@@ -4,7 +4,7 @@
 * (feature) Properly serialize task objects in task log.
 * (deprecation) Deprecate `TaskLog::getTaskObject()`. Use `TaskDetailsNormalizer::deserializeTask()` instead.
 * (improvement) Avoid redundant `COUNT` queries in `LogCleaner` by using the count of fetched IDs directly.
-* (internal) Add tests for `TaskDetailsNormalizer` and `LogCleaner`.
+* (internal) Add tests for `TaskDetailsNormalizer`, `LogCleaner`, `TaskRegistry`, and `RegisterTasksEvent`.
 
 
 3.2.4
