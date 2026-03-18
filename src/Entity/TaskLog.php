@@ -195,18 +195,15 @@ class TaskLog
 	}
 
 	/**
-	 * Returns the unserialized cached task object
+	 * @deprecated Use TaskDetailsNormalizer::deserializeTask() instead. Will be removed in 4.0.
+	 *
+	 * @todo Remove in 4.0.
 	 */
-	public function getTaskObject () : ?object
+	public function getTaskObject () : null
 	{
-		$task = $this->getTaskDetails()["task"] ?? null;
-		$unserialized = \is_string($task)
-			? unserialize($task)
-			: null;
+		trigger_deprecation("21torr/task-manager", "3.2.5", "TaskLog::getTaskObject() is deprecated, use TaskDetailsNormalizer::deserializeTask() instead.");
 
-		return \is_object($unserialized)
-			? $unserialized
-			: null;
+		return null;
 	}
 
 	/**

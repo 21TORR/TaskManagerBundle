@@ -30,6 +30,7 @@
 		"symfony/lock": "^7.4 || ^8.0",
 		"symfony/messenger": "^7.4 || ^8.0",
 		"symfony/scheduler": "^7.4 || ^8.0",
+		"symfony/serializer": "^7.4 || ^8.0",
 		"symfony/string": "^7.4 || ^8.0",
 		"symfony/uid": "^7.4 || ^8.0"
 	},
