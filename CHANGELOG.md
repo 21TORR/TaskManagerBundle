@@ -1,3 +1,9 @@
+3.3.1
+=====
+
+* (bug) Fix invalid index definition.
+
+
 3.3.0
 =====
 

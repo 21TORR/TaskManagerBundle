@@ -24,8 +24,8 @@ use function Symfony\Component\Clock\now;
  */
 #[ORM\Entity]
 #[ORM\Table(name: "task_manager_tasks")]
-#[ORM\Index(columns: ["time_queued"], name: "idx_task_manager_tasks_time_queued")]
-#[ORM\Index(columns: ["taskId"], name: "idx_task_manager_task_id")]
+#[ORM\Index(name: "idx_task_manager_tasks_time_queued", fields: ["timeQueued"])]
+#[ORM\Index(name: "idx_task_manager_task_id", fields: ["taskId"])]
 class TaskLog
 {
 	/**
