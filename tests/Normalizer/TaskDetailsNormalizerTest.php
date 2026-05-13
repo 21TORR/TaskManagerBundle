@@ -22,9 +22,9 @@ final class TaskDetailsNormalizerTest extends TestCase
 {
 	// region Helpers
 
-	// @phpstan-ignore-next-line 21torr.custom.task.suffix
 	private function createTask (string $label = "Test Task") : Task
 	{
+		// @phpstan-ignore-next-line 21torr.custom.task.suffix
 		return new readonly class($label) extends Task {
 			public function __construct (
 				private string $label,
@@ -68,7 +68,10 @@ final class TaskDetailsNormalizerTest extends TestCase
 
 		$details = $this->createNormalizer($serializer)->normalizeTaskDetails(new Envelope($task));
 
+		self::assertArrayHasKey("label", $details);
 		self::assertSame("My Label", $details["label"]);
+
+		self::assertArrayHasKey("task", $details);
 		self::assertSame('{"ulid":"abc"}', $details["task"]);
 	}
 
@@ -82,7 +85,10 @@ final class TaskDetailsNormalizerTest extends TestCase
 
 		$details = $this->createNormalizer()->normalizeTaskDetails($envelope);
 
+		self::assertArrayHasKey("transport", $details);
 		self::assertSame("my_transport", $details["transport"]);
+
+		self::assertArrayHasKey("handledBy", $details);
 		self::assertSame("App\\Handler::__invoke", $details["handledBy"]);
 	}
 
@@ -91,7 +97,10 @@ final class TaskDetailsNormalizerTest extends TestCase
 		$task = $this->createTask();
 		$details = $this->createNormalizer()->normalizeTaskDetails(new Envelope($task));
 
+		self::assertArrayHasKey("transport", $details);
 		self::assertNull($details["transport"]);
+
+		self::assertArrayHasKey("handledBy", $details);
 		self::assertNull($details["handledBy"]);
 	}
 

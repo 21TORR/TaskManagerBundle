@@ -16,9 +16,9 @@ final class TaskRunTest extends TestCase
 {
 	// region Helpers
 
-	// @phpstan-ignore-next-line 21torr.custom.task.suffix
 	private function createLog () : TaskLog
 	{
+		// @phpstan-ignore-next-line 21torr.custom.task.suffix
 		$task = new readonly class() extends Task {
 			#[\Override]
 			public function getMetaData () : TaskMetaData

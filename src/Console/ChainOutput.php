@@ -13,6 +13,7 @@ final readonly class ChainOutput implements OutputInterface
 	private BufferedOutput $bufferedOutput;
 
 	/**
+	 * @param 8|16|32|64|128|256 $verbosity
 	 */
 	public function __construct (
 		int $verbosity = self::VERBOSITY_NORMAL,

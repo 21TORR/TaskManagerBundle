@@ -19,9 +19,9 @@ final class LogCleanerTest extends TestCase
 {
 	// region Helpers
 
-	// @phpstan-ignore-next-line 21torr.custom.task.suffix
 	private function createTask () : Task
 	{
+		// @phpstan-ignore-next-line 21torr.custom.task.suffix
 		return new readonly class() extends Task {
 			#[\Override]
 			public function getMetaData () : TaskMetaData
@@ -34,6 +34,8 @@ final class LogCleanerTest extends TestCase
 	/**
 	 * Creates a QueryBuilder stub where all fluent methods return self
 	 * and getQuery() returns the given query.
+	 *
+	 * @param Query<object> $query
 	 */
 	private function createQueryBuilderStub (Query $query) : QueryBuilder
 	{
@@ -49,6 +51,9 @@ final class LogCleanerTest extends TestCase
 		return $qb;
 	}
 
+	/**
+	 * @return Query<object>
+	 */
 	private function createCutoffQuery (?TaskLog $cutoffEntry) : Query
 	{
 		$query = self::createStub(Query::class);
@@ -57,6 +62,9 @@ final class LogCleanerTest extends TestCase
 		return $query;
 	}
 
+	/**
+	 * @return Query<object>
+	 */
 	private function createFetchQuery (array $ids) : Query
 	{
 		$rows = array_map(static fn (int $id) => ["id" => $id], $ids);
@@ -190,6 +198,7 @@ final class LogCleanerTest extends TestCase
 		$cleaner->cleanLogEntries();
 
 		self::assertNotNull($capturedOldestTimestamp);
+		self::assertInstanceOf(\DateTimeInterface::class, $capturedOldestTimestamp);
 		self::assertEqualsWithDelta(
 			$expectedPurgeDate->getTimestamp(),
 			$capturedOldestTimestamp->getTimestamp(),

@@ -202,6 +202,7 @@ class TaskLog
 	 */
 	public function getTaskObject () : null
 	{
+		// @phpstan-ignore-next-line todoBy.sfDeprecation
 		trigger_deprecation("21torr/task-manager", "3.2.5", "TaskLog::getTaskObject() is deprecated, use TaskDetailsNormalizer::deserializeTask() instead.");
 
 		return null;

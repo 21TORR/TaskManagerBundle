@@ -22,9 +22,9 @@ final class TaskManagerTest extends TestCase
 {
 	// region Helpers
 
-	// @phpstan-ignore-next-line 21torr.custom.task.suffix
 	private function createTask (?string $uniqueTaskId = null) : Task
 	{
+		// @phpstan-ignore-next-line 21torr.custom.task.suffix
 		return new readonly class($uniqueTaskId) extends Task {
 			public function __construct (
 				private ?string $uniqueTaskId,

@@ -16,9 +16,9 @@ final class TaskRegistryTest extends TestCase
 {
 	// region Helpers
 
-	// @phpstan-ignore-next-line 21torr.custom.task.suffix
 	private function createTask (string $label, ?string $group = null) : Task
 	{
+		// @phpstan-ignore-next-line 21torr.custom.task.suffix
 		return new readonly class($label, $group) extends Task {
 			public function __construct (
 				private string $label,
