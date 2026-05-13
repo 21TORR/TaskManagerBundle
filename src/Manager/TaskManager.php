@@ -38,8 +38,7 @@ final readonly class TaskManager
 			return false;
 		}
 
-		$envelope = new Envelope($task);
-		$envelope->with(...$stamps);
+		$envelope = new Envelope($task, $stamps);
 
 		$this->messageBus->dispatch($envelope);
 

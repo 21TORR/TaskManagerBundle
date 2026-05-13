@@ -30,6 +30,7 @@
 		"symfony/lock": "^7.4 || ^8.0",
 		"symfony/messenger": "^7.4 || ^8.0",
 		"symfony/scheduler": "^7.4 || ^8.0",
+		"symfony/serializer": "^7.4 || ^8.0",
 		"symfony/string": "^7.4 || ^8.0",
 		"symfony/uid": "^7.4 || ^8.0"
 	},
@@ -63,8 +64,8 @@
 			"forward-command": true
 		},
 		"branch-alias": {
-			"2.x-dev": "2.99.x-dev",
-			"dev-next": "2.99.x-dev"
+			"3.x-dev": "3.99.x-dev",
+			"dev-next": "3.99.x-dev"
 		}
 	},
 	"scripts": {

@@ -1,3 +1,22 @@
+3.3.0
+=====
+
+* (feature) Properly serialize task objects in task log.
+* (deprecation) Deprecate `TaskLog::getTaskObject()`. Use `TaskDetailsNormalizer::deserializeTask()` instead.
+* (improvement) Avoid redundant `COUNT` queries in `LogCleaner` by using the count of fetched IDs directly.
+* (internal) Add tests for `TaskDetailsNormalizer`, `LogCleaner`, `TaskRegistry`, `RegisterTasksEvent`, `TaskManager`, `TaskLog`, and `TaskRun`.
+* (improvement) Add `TaskLogModel::findByTaskId()`.
+
+
+3.2.4
+=====
+
+* (bug) Fix stamps passed to `TaskManager::enqueue()` being silently dropped due to `Envelope::with()` being immutable.
+* (improvement) Add database index on `time_queued` column of `task_manager_tasks` for faster log queries and cleanup.
+* (internal) Remove unused `Paginator` wrapper in `TaskLogModel::getMostRecentEntries()`.
+* (security) Replace `serialize()`/`unserialize()` with Symfony Serializer in `TaskDetailsNormalizer`. Add `TaskDetailsNormalizer::deserializeTask()` as replacement for the deprecated `TaskLog::getTaskObject()`.
+
+
 3.2.3
 =====
 

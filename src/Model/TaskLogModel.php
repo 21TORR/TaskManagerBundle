@@ -4,7 +4,6 @@ namespace Torr\TaskManager\Model;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
-use Doctrine\ORM\Tools\Pagination\Paginator;
 use Psr\Log\LoggerInterface;
 use Torr\TaskManager\Entity\TaskLog;
 use Torr\TaskManager\Entity\TaskRun;
@@ -38,13 +37,21 @@ final class TaskLogModel
 	}
 
 	/**
+	 *
+	 */
+	public function findByTaskId (string $taskId) : ?TaskLog
+	{
+		return $this->repository->findOneBy([
+			"taskId" => $taskId,
+		]);
+	}
+
+	/**
 	 * Gets or creates the log entry for the given task
 	 */
 	public function getLogForTask (Task $task) : TaskLog
 	{
-		$log = $this->repository->findOneBy([
-			"taskId" => $task->ulid,
-		]);
+		$log = $this->findByTaskId($task->ulid);
 
 		if (null !== $log)
 		{
@@ -56,14 +63,6 @@ final class TaskLogModel
 		$this->entityManager->persist($log);
 
 		return $log;
-	}
-
-	/**
-	 *
-	 */
-	public function getTaskCount () : int
-	{
-		return $this->repository->count();
 	}
 
 	/**
@@ -92,9 +91,7 @@ final class TaskLogModel
 		}
 
 		/** @var TaskLog[] */
-		return (new Paginator($builder->getQuery()))
-			->getQuery()
-			->getResult();
+		return $builder->getQuery()->getResult();
 	}
 
 	/**

@@ -1,3 +1,9 @@
+3.x to 4.0
+==========
+
+* `TaskLog::getTaskObject()` was removed. Use `TaskDetailsNormalizer::deserializeTask($log)` instead.
+
+
 1.x to 2.0
 ==========
 
