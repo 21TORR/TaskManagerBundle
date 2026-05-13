@@ -5,6 +5,7 @@
 * (deprecation) Deprecate `TaskLog::getTaskObject()`. Use `TaskDetailsNormalizer::deserializeTask()` instead.
 * (improvement) Avoid redundant `COUNT` queries in `LogCleaner` by using the count of fetched IDs directly.
 * (internal) Add tests for `TaskDetailsNormalizer`, `LogCleaner`, `TaskRegistry`, `RegisterTasksEvent`, `TaskManager`, `TaskLog`, and `TaskRun`.
+* (improvement) Add `TaskLogModel::findByTaskId()`.
 
 
 3.2.4

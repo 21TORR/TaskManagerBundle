@@ -37,13 +37,21 @@ final class TaskLogModel
 	}
 
 	/**
+	 *
+	 */
+	public function findByTaskId (string $taskId) : ?TaskLog
+	{
+		return $this->repository->findOneBy([
+			"taskId" => $taskId,
+		]);
+	}
+
+	/**
 	 * Gets or creates the log entry for the given task
 	 */
 	public function getLogForTask (Task $task) : TaskLog
 	{
-		$log = $this->repository->findOneBy([
-			"taskId" => $task->ulid,
-		]);
+		$log = $this->findByTaskId($task->ulid);
 
 		if (null !== $log)
 		{
