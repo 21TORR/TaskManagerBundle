@@ -1,7 +1,7 @@
 3.3.2
 =====
 
-* (improvement) note
+* (improvement) Add a note about requeueing a single task in development.
 
 
 3.3.1
