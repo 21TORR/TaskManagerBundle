@@ -8,6 +8,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Torr\Cli\Console\Style\TorrStyle;
+use Torr\Hosting\Hosting\HostingEnvironment;
 use Torr\TaskManager\Exception\Registry\UnknownTaskKeyException;
 use Torr\TaskManager\Manager\TaskManager;
 use Torr\TaskManager\Registry\TaskRegistry;
@@ -23,6 +24,7 @@ final class QueueTasksCommand extends Command
 		private readonly TaskRegistry $taskRegistry,
 		private readonly TaskManager $taskManager,
 		private readonly TransportsHelper $receiverHelper,
+		private readonly HostingEnvironment $hostingEnvironment,
 	)
 	{
 		parent::__construct();
@@ -53,7 +55,7 @@ final class QueueTasksCommand extends Command
 
 		try
 		{
-			$tasksToQueue = $this->getTasksToQueue($input, $io);
+			[$tasksToQueue, $taskPassedExplicitly] = $this->getTasksToQueue($input, $io);
 		}
 		catch (UnknownTaskKeyException $exception)
 		{
@@ -79,13 +81,24 @@ final class QueueTasksCommand extends Command
 
 		$io->success("All done.");
 
+		if ($this->hostingEnvironment->isDevelopment() && !$taskPassedExplicitly && 1 === \count($tasksToQueue))
+		{
+			$io->newLine(2);
+			$io->comment("If you want to easily requeue this task, you can use the direct command:");
+			$io->writeln(\sprintf(
+				"bin/console task-manager:queue %s",
+				$tasksToQueue[0]->getMetaData()->getKey(),
+			));
+			$io->newLine();
+		}
+
 		return self::SUCCESS;
 	}
 
 	/**
 	 * Handles the interaction to get the tasks to queue
 	 *
-	 * @return Task[]
+	 * @return array{0: Task[], 1: bool} the tasks to queue and whether they were passed explicitly
 	 */
 	private function getTasksToQueue (InputInterface $input, TorrStyle $io) : array
 	{
@@ -94,7 +107,10 @@ final class QueueTasksCommand extends Command
 
 		if ([] !== $taskKeysProvidedInArgument)
 		{
-			return $this->fetchTasksByKey($taskKeysProvidedInArgument);
+			return [
+				$this->fetchTasksByKey($taskKeysProvidedInArgument),
+				true,
+			];
 		}
 
 		$flatTasks = [];
@@ -126,7 +142,7 @@ final class QueueTasksCommand extends Command
 			$result[] = $flatTasks[$index];
 		}
 
-		return $result;
+		return [$result, false];
 	}
 
 	/**
