@@ -22,7 +22,6 @@ use Torr\TaskManager\Transport\TransportsHelper;
 final class TaskManagerTest extends TestCase
 {
 	// region Helpers
-
 	private function createTask (?string $uniqueTaskId = null) : Task
 	{
 		// @phpstan-ignore-next-line 21torr.custom.task.suffix
@@ -47,7 +46,7 @@ final class TaskManagerTest extends TestCase
 	 *
 	 * @param Envelope[] $envelopes
 	 */
-	private function createListableTransport (array $envelopes = []) : TransportInterface&ListableReceiverInterface
+	private function createListableTransport (array $envelopes = []) : ListableReceiverInterface|TransportInterface
 	{
 		return new class($envelopes) implements TransportInterface, ListableReceiverInterface {
 			/** @param Envelope[] $envelopes */
@@ -118,7 +117,7 @@ final class TaskManagerTest extends TestCase
 		$bus->expects(self::once())
 			->method("dispatch")
 			->with(self::callback(
-				static fn (Envelope $envelope) : bool => "unique.key" === $envelope->last(DeduplicateStamp::class)->getKey()->__toString(),
+				static fn (Envelope $envelope) : bool => "unique.key" === $envelope->last(DeduplicateStamp::class)?->getKey()->__toString(),
 			))
 			->willReturnArgument(0);
 
