@@ -28,8 +28,8 @@ final class TaskTest extends TestCase
 			}
 		};
 
-		$initialUlid = $task->ulid;
+		$initialUlid = $task->uuid;
 		$newTask = $task->withNewTaskUlid();
-		self::assertNotSame($initialUlid, $newTask->ulid, "Task ULID should change on PHP 8.4");
+		self::assertNotSame($initialUlid, $newTask->uuid, "Task ULID should change on PHP 8.4");
 	}
 }

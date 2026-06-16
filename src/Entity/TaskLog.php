@@ -36,7 +36,7 @@ class TaskLog
 	public private(set) ?int $id = null;
 
 	/**
-	 * ULIDs have only 22 characters, but just to be sure
+	 * UUIDv7s have only 36 characters, but just to be sure we use 50 characters
 	 */
 	#[ORM\Column(type: Types::STRING, length: 50, unique: true)]
 	public private(set) string $taskId;
@@ -73,7 +73,7 @@ class TaskLog
 	)
 	{
 		$this->taskClass = $task::class;
-		$this->taskId = $task->ulid;
+		$this->taskId = $task->uuid;
 		$this->runs = new ArrayCollection();
 		$this->timeQueued = now();
 	}

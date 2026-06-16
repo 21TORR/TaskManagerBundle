@@ -51,7 +51,7 @@ final class TaskLogModel
 	 */
 	public function getLogForTask (Task $task) : TaskLog
 	{
-		$log = $this->findByTaskId($task->ulid);
+		$log = $this->findByTaskId($task->uuid);
 
 		if (null !== $log)
 		{
