@@ -4,6 +4,7 @@ namespace Tests\Torr\TaskManager\Entity;
 
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Clock\Test\ClockSensitiveTrait;
 use Torr\TaskManager\Entity\TaskLog;
 use Torr\TaskManager\Entity\TaskRun;
 use Torr\TaskManager\Task\Task;
@@ -14,8 +15,9 @@ use Torr\TaskManager\Task\TaskMetaData;
  */
 final class TaskRunTest extends TestCase
 {
-	// region Helpers
+	use ClockSensitiveTrait;
 
+	// region Helpers
 	private function createLog () : TaskLog
 	{
 		// @phpstan-ignore-next-line 21torr.custom.task.suffix
@@ -45,14 +47,16 @@ final class TaskRunTest extends TestCase
 
 	public function testFinishMarksAsSuccessful () : void
 	{
+		self::mockTime("2026-06-16 12:00:00");
 		$run = new TaskRun($this->createLog());
+		self::mockTime("2026-06-16 12:00:05");
 		$run->finish(true, "some output");
 
 		self::assertTrue($run->isFinished);
 		self::assertTrue($run->success);
 		self::assertSame("some output", $run->output);
 		self::assertTrue($run->finishedProperly);
-		self::assertGreaterThan(0, $run->duration);
+		self::assertEquals(5e9, $run->duration);
 	}
 
 	public function testFinishMarksAsFailure () : void

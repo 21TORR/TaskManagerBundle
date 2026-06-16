@@ -1,3 +1,10 @@
+3.4.0 (unreleased)
+=====
+
+* (improvement) Require Symfony 8.1+
+* (feature) Use [Symfonys native message deduplication](https://symfony.com/doc/current/messenger.html#message-deduplication)
+
+
 3.3.2
 =====
 
