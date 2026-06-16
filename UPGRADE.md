@@ -2,6 +2,7 @@
 ==========
 
 * `TaskLog::getTaskObject()` was removed. Use `TaskDetailsNormalizer::deserializeTask($log)` instead.
+* `TaskLog::$ulid` was removed, use `TaskLog::$uuid` instead.
 
 
 1.x to 2.0

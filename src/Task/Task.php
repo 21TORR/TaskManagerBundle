@@ -2,20 +2,30 @@
 
 namespace Torr\TaskManager\Task;
 
-use Symfony\Component\Uid\Ulid;
+use Symfony\Component\Uid\UuidV7;
 
 /**
  * A runnable task
  */
 abstract readonly class Task
 {
+	public string $uuid;
+
+	/**
+	 * @deprecated use $taskId instead
+	 *
+	 * @todo remove in 4.0
+	 */
 	public string $ulid;
 
 	/**
 	 */
 	public function __construct ()
 	{
-		$this->ulid = new Ulid()->toBase58();
+		$uuid = new UuidV7()->toString();
+		$this->uuid = $uuid;
+		/** @phpstan-ignore-next-line property.deprecated (We still need to support the deprecated property) */
+		$this->ulid = $uuid;
 	}
 
 	/**
@@ -31,8 +41,11 @@ abstract readonly class Task
 	 */
 	public function withNewTaskUlid () : static
 	{
+		$uuid = new UuidV7()->toString();
+
 		return clone($this, [
-			"ulid" => new Ulid()->toBase58(),
+			"uuid" => $uuid,
+			"ulid" => $uuid,
 		]);
 	}
 }

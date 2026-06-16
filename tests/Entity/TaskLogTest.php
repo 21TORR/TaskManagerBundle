@@ -184,7 +184,7 @@ final class TaskLogTest extends TestCase
 		$task = $this->createTask();
 		$log = new TaskLog($task);
 
-		self::assertSame($task->ulid, $log->taskId);
+		self::assertSame($task->uuid, $log->taskId);
 	}
 
 	public function testTaskClassMatchesTaskClass () : void
