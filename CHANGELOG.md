@@ -1,3 +1,9 @@
+3.4.0 (unreleased)
+=====
+
+* (improvement) Require Symfony 8.1+
+
+
 3.3.2
 =====
 
