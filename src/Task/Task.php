@@ -48,4 +48,13 @@ abstract readonly class Task
 			"ulid" => $uuid,
 		]);
 	}
+
+	/**
+	 * Is called before the task is stored in the task log entry.
+	 * You can clone the task here to remove / redact / truncate fields in the normalized task.
+	 */
+	public function prepareForTaskLog () : static
+	{
+		return $this;
+	}
 }

@@ -38,7 +38,7 @@ final readonly class TaskDetailsNormalizer
 		if ($task instanceof Task)
 		{
 			$details["label"] = $task->getMetaData()->label;
-			$details["task"] = $this->serializer->serialize($task, JsonEncoder::FORMAT);
+			$details["task"] = $this->serializer->serialize($task->prepareForTaskLog(), JsonEncoder::FORMAT);
 		}
 
 		return $details;
