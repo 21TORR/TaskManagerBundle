@@ -6,6 +6,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Messenger\Stamp\DeduplicateStamp;
 use Symfony\Component\Messenger\Stamp\StampInterface;
 use Symfony\Component\Messenger\Transport\Receiver\ListableReceiverInterface;
 use Symfony\Component\Messenger\Transport\TransportInterface;
@@ -112,46 +113,17 @@ final class TaskManagerTest extends TestCase
 
 	public function testEnqueueReturnsFalseWhenDuplicateInQueue () : void
 	{
-		$existingTask = $this->createTask("test.task");
-		$transport = $this->createListableTransport([new Envelope($existingTask)]);
+		$bus = self::createMock(MessageBusInterface::class);
 
-		$bus = $this->createMock(MessageBusInterface::class);
-		$bus->expects(self::never())->method("dispatch");
+		$bus->expects(self::once())
+			->method("dispatch")
+			->with(self::callback(
+				static fn (Envelope $envelope) : bool => "unique.key" === $envelope->last(DeduplicateStamp::class)->getKey()->__toString(),
+			))
+			->willReturnArgument(0);
 
-		$manager = $this->createManager(["queue" => $transport], $bus);
-		$newTask = $this->createTask("test.task");
-
-		self::assertFalse($manager->enqueue($newTask));
-	}
-
-	public function testEnqueueScansMultipleQueuesForDuplicate () : void
-	{
-		$existingTask = $this->createTask("test.task");
-		$emptyTransport = $this->createListableTransport([]);
-		$fullTransport = $this->createListableTransport([new Envelope($existingTask)]);
-
-		$bus = $this->createMock(MessageBusInterface::class);
-		$bus->expects(self::never())->method("dispatch");
-
-		$manager = $this->createManager([
-			"queue_a" => $emptyTransport,
-			"queue_b" => $fullTransport,
-		], $bus);
-
-		self::assertFalse($manager->enqueue($this->createTask("test.task")));
-	}
-
-	public function testEnqueueDispatchesWhenDifferentUniqueTaskIdInQueue () : void
-	{
-		$otherTask = $this->createTask("other.task");
-		$transport = $this->createListableTransport([new Envelope($otherTask)]);
-
-		$bus = $this->createMock(MessageBusInterface::class);
-		$bus->expects(self::once())->method("dispatch")->willReturnArgument(0);
-
-		$manager = $this->createManager(["queue" => $transport], $bus);
-
-		self::assertTrue($manager->enqueue($this->createTask("test.task")));
+		$manager = $this->createManager(["queue" => $this->createListableTransport()], $bus);
+		$manager->enqueue($this->createTask("unique.key"));
 	}
 
 	public function testEnqueueForwardsStampsToDispatchedEnvelope () : void
