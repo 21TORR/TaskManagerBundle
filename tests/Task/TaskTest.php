@@ -28,8 +28,10 @@ final class TaskTest extends TestCase
 			}
 		};
 
-		$initialUlid = $task->uuid;
+		/** @phpstan-ignore-next-line property.deprecated (The uuid integration will be refactored in v4) */
+		$initialUlid = $task->ulid;
 		$newTask = $task->withNewTaskUlid();
-		self::assertNotSame($initialUlid, $newTask->uuid, "Task ULID should change on PHP 8.4");
+		/** @phpstan-ignore-next-line property.deprecated (The uuid integration will be refactored in v4) */
+		self::assertNotSame($initialUlid, $newTask->ulid, "Task ULID should change on PHP 8.4");
 	}
 }

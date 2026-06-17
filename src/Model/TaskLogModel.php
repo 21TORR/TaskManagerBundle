@@ -51,7 +51,8 @@ final class TaskLogModel
 	 */
 	public function getLogForTask (Task $task) : TaskLog
 	{
-		$log = $this->findByTaskId($task->uuid);
+		/** @phpstan-ignore-next-line property.deprecated (The uuid integration will be refactored in v4) */
+		$log = $this->findByTaskId($task->ulid);
 
 		if (null !== $log)
 		{
