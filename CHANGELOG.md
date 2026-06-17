@@ -4,7 +4,7 @@
 * (improvement) Require Symfony 8.1+
 * (feature) Use [Symfonys native message deduplication](https://symfony.com/doc/current/messenger.html#message-deduplication)
 * (improvement) Use UUIDv7 instead of ULID for task ids
-* (deprecation) Deprecate `TaskLog::$ulid`, use `TaskLog::$uuid` instead.
+* (deprecation) Deprecate `TaskLog::$ulid`.
 * (feature) Add `Task::prepareForTaskLog()` to be able to modify the payload before storing it in the database.
 
 

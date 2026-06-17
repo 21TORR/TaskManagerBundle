@@ -9,12 +9,12 @@ use Symfony\Component\Uid\UuidV7;
  */
 abstract readonly class Task
 {
-	public string $uuid;
-
 	/**
 	 * @deprecated use $taskId instead
 	 *
 	 * @todo remove in 4.0
+	 *
+	 * @phpstan-ignore-next-line property.deprecated (The uuid integration will be refactored in v4)
 	 */
 	public string $ulid;
 
@@ -23,8 +23,7 @@ abstract readonly class Task
 	public function __construct ()
 	{
 		$uuid = new UuidV7()->toString();
-		$this->uuid = $uuid;
-		/** @phpstan-ignore-next-line property.deprecated (We still need to support the deprecated property) */
+		/** @phpstan-ignore-next-line property.deprecated (The uuid integration will be refactored in v4) */
 		$this->ulid = $uuid;
 	}
 
@@ -44,7 +43,6 @@ abstract readonly class Task
 		$uuid = new UuidV7()->toString();
 
 		return clone($this, [
-			"uuid" => $uuid,
 			"ulid" => $uuid,
 		]);
 	}

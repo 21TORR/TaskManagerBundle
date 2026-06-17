@@ -184,7 +184,8 @@ final class TaskLogTest extends TestCase
 		$task = $this->createTask();
 		$log = new TaskLog($task);
 
-		self::assertSame($task->uuid, $log->taskId);
+		/** @phpstan-ignore-next-line property.deprecated (The uuid integration will be refactored in v4) */
+		self::assertSame($task->ulid, $log->taskId);
 	}
 
 	public function testTaskClassMatchesTaskClass () : void
