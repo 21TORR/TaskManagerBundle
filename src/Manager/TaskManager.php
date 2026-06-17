@@ -23,11 +23,11 @@ final readonly class TaskManager
 	 *
 	 * @param StampInterface[] $stamps
 	 *
-	 * @return bool whether the message was added. If this is false, an identical job is already queued.
+	 * @return string The uuid of the task
 	 *
 	 * @api
 	 */
-	public function enqueue (Task $task, array $stamps = []) : bool
+	public function enqueue (Task $task, array $stamps = []) : string
 	{
 		$uniqueTaskId = $task->getMetaData()->uniqueTaskId;
 
@@ -40,7 +40,8 @@ final readonly class TaskManager
 			new Envelope($task, $stamps),
 		);
 
-		return true;
+		/** @phpstan-ignore-next-line property.deprecated (The uuid integration will be refactored in v4) */
+		return $task->ulid;
 	}
 
 	/**

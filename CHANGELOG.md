@@ -1,3 +1,9 @@
+3.4.1
+=====
+
+* (improvement) Return task uuid from task manager.
+
+
 3.4.0
 =====
 

@@ -97,7 +97,7 @@ final class TaskManagerTest extends TestCase
 		$manager = $this->createManager(["queue" => $this->createListableTransport()], $bus);
 		$task = $this->createTask(null);
 
-		self::assertTrue($manager->enqueue($task));
+		self::assertIsString($manager->enqueue($task));
 	}
 
 	public function testEnqueueReturnsTrueWhenNoConflict () : void
@@ -107,7 +107,7 @@ final class TaskManagerTest extends TestCase
 
 		$manager = $this->createManager(["queue" => $this->createListableTransport()], $bus);
 
-		self::assertTrue($manager->enqueue($this->createTask("test.task")));
+		self::assertIsString($manager->enqueue($this->createTask("test.task")));
 	}
 
 	public function testEnqueueReturnsFalseWhenDuplicateInQueue () : void
