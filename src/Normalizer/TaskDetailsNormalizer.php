@@ -40,6 +40,11 @@ final readonly class TaskDetailsNormalizer
 			$details["label"] = $task->getMetaData()->label;
 			$details["task"] = $this->serializer->serialize($task->prepareForTaskLog(), JsonEncoder::FORMAT);
 		}
+		else
+		{
+			$details["label"] = get_debug_type($task);
+			$details["task"] = $this->serializer->serialize($task, JsonEncoder::FORMAT);
+		}
 
 		return $details;
 	}

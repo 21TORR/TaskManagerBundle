@@ -103,19 +103,6 @@ final class TaskDetailsNormalizerTest extends TestCase
 		self::assertArrayHasKey("handledBy", $details);
 		self::assertNull($details["handledBy"]);
 	}
-
-	public function testNormalizeNonTaskMessageSkipsLabelAndTask () : void
-	{
-		$message = new \stdClass();
-		$serializer = $this->createMock(SerializerInterface::class);
-		$serializer->expects(self::never())->method("serialize");
-
-		$details = $this->createNormalizer($serializer)->normalizeTaskDetails(new Envelope($message));
-
-		self::assertArrayNotHasKey("label", $details);
-		self::assertArrayNotHasKey("task", $details);
-	}
-
 	// endregion
 
 	// region deserializeTask
@@ -123,7 +110,7 @@ final class TaskDetailsNormalizerTest extends TestCase
 	public function testDeserializeReturnsNullWhenNoTaskStored () : void
 	{
 		$task = $this->createTask();
-		$log = new TaskLog($task);
+		$log = new TaskLog($task, "my-uuid");
 		// taskDetails is empty by default
 
 		$result = $this->createNormalizer()->deserializeTask($log);
@@ -134,7 +121,7 @@ final class TaskDetailsNormalizerTest extends TestCase
 	public function testDeserializeReturnsTask () : void
 	{
 		$originalTask = $this->createTask();
-		$log = new TaskLog($originalTask);
+		$log = new TaskLog($originalTask, "my-uuid");
 		$log->setTaskDetails(["task" => '{"ulid":"abc"}']);
 
 		$serializer = $this->createMock(SerializerInterface::class);
@@ -152,7 +139,7 @@ final class TaskDetailsNormalizerTest extends TestCase
 	public function testDeserializeReturnsNullWhenDeserializedObjectIsNotATask () : void
 	{
 		$task = $this->createTask();
-		$log = new TaskLog($task);
+		$log = new TaskLog($task, "my-uuid");
 		$log->setTaskDetails(["task" => "{}'"]);
 
 		$serializer = self::createStub(SerializerInterface::class);
@@ -166,7 +153,7 @@ final class TaskDetailsNormalizerTest extends TestCase
 	public function testDeserializeLogsErrorAndReturnsNullOnSerializerException () : void
 	{
 		$task = $this->createTask();
-		$log = new TaskLog($task);
+		$log = new TaskLog($task, "my-uuid");
 		$log->setTaskDetails(["task" => "invalid-json"]);
 
 		$serializer = self::createStub(SerializerInterface::class);

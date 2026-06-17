@@ -8,7 +8,6 @@ use Psr\Log\LoggerInterface;
 use Torr\TaskManager\Entity\TaskLog;
 use Torr\TaskManager\Entity\TaskRun;
 use Torr\TaskManager\Task\DispatchAfterRunTask\DispatchAfterRunTask;
-use Torr\TaskManager\Task\Task;
 
 final class TaskLogModel
 {
@@ -47,12 +46,11 @@ final class TaskLogModel
 	}
 
 	/**
-	 * Gets or creates the log entry for the given task
+	 * Gets or creates the log entry for the given task uuid
 	 */
-	public function getLogForTask (Task $task) : TaskLog
+	public function getLogForUuid (object $task, string $uuid) : TaskLog
 	{
-		/** @phpstan-ignore-next-line property.deprecated (The uuid integration will be refactored in v4) */
-		$log = $this->findByTaskId($task->ulid);
+		$log = $this->findByTaskId($uuid);
 
 		if (null !== $log)
 		{
@@ -60,7 +58,7 @@ final class TaskLogModel
 		}
 
 		// if it isn't created yet, create a new one
-		$log = new TaskLog($task);
+		$log = new TaskLog($task, $uuid);
 		$this->entityManager->persist($log);
 
 		return $log;

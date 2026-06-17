@@ -23,7 +23,7 @@ abstract readonly class Task
 	public function __construct ()
 	{
 		$uuid = new UuidV7()->toString();
-		/** @phpstan-ignore-next-line property.deprecated (The uuid integration will be refactored in v4) */
+		/** @phpstan-ignore-next-line property.deprecated (We still need to support the deprecated property) */
 		$this->ulid = $uuid;
 	}
 

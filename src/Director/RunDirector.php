@@ -17,7 +17,7 @@ final class RunDirector
 	 */
 	public function __construct (
 		private readonly TaskLogModel $logModel,
-		private readonly TaskRun $run,
+		private readonly ?TaskRun $run,
 	)
 	{
 		$this->output = new ChainOutput();
@@ -40,6 +40,11 @@ final class RunDirector
 	 */
 	public function finish (bool $success) : void
 	{
+		if (null === $this->run)
+		{
+			return;
+		}
+
 		$this->run->finish($success, $this->output->getBufferedOutput());
 		$this->logModel->flush();
 	}

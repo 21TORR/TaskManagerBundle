@@ -29,7 +29,7 @@ final class TaskRunTest extends TestCase
 			}
 		};
 
-		return new TaskLog($task);
+		return new TaskLog($task, "my-uuid");
 	}
 
 	// endregion

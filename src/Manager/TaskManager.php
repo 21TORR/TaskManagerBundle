@@ -6,6 +6,7 @@ use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\DeduplicateStamp;
 use Symfony\Component\Messenger\Stamp\StampInterface;
+use Torr\TaskManager\Identification\TaskIdStamp;
 use Torr\TaskManager\Task\Task;
 use Torr\TaskManager\Transport\TransportsHelper;
 
@@ -27,21 +28,26 @@ final readonly class TaskManager
 	 *
 	 * @api
 	 */
-	public function enqueue (Task $task, array $stamps = []) : string
+	public function enqueue (object $task, array $stamps = []) : string
 	{
-		$uniqueTaskId = $task->getMetaData()->uniqueTaskId;
-
-		if (null !== $uniqueTaskId)
+		if ($task instanceof Task)
 		{
-			$stamps[] = new DeduplicateStamp($uniqueTaskId);
+			$uniqueTaskId = $task->getMetaData()->uniqueTaskId;
+
+			if (null !== $uniqueTaskId)
+			{
+				$stamps[] = new DeduplicateStamp($uniqueTaskId);
+			}
 		}
+
+		$id = new TaskIdStamp();
+		$stamps[] = $id;
 
 		$this->messageBus->dispatch(
 			new Envelope($task, $stamps),
 		);
 
-		/** @phpstan-ignore-next-line property.deprecated (The uuid integration will be refactored in v4) */
-		return $task->ulid;
+		return $id->taskId;
 	}
 
 	/**
