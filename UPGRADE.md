@@ -3,6 +3,7 @@
 
 * `TaskLog::getTaskObject()` was removed. Use `TaskDetailsNormalizer::deserializeTask($log)` instead.
 * `TaskLog::$ulid` was removed.
+* `Task` has no constructor anymore, so you need to remove your `parent::__construct()` calls.
 
 
 1.x to 2.0

@@ -20,10 +20,7 @@ readonly class DispatchAfterRunTask extends Task implements TaskManagerInternalT
 	public function __construct (
 		public object $task,
 		public array|string $transportNames = [],
-	)
-	{
-		parent::__construct();
-	}
+	) {}
 
 	/**
 	 *

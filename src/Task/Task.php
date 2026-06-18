@@ -15,7 +15,6 @@ abstract readonly class Task
 	 */
 	abstract public function getMetaData () : TaskMetaData;
 
-
 	/**
 	 * Is called before the task is stored in the task log entry.
 	 * You can clone the task here to remove / redact / truncate fields in the normalized task.

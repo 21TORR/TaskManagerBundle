@@ -28,10 +28,7 @@ final class TaskManagerTest extends TestCase
 		return new readonly class($uniqueTaskId) extends Task {
 			public function __construct (
 				private ?string $uniqueTaskId,
-			)
-			{
-				parent::__construct();
-			}
+			) {}
 
 			#[\Override]
 			public function getMetaData () : TaskMetaData
@@ -142,7 +139,7 @@ final class TaskManagerTest extends TestCase
 		$stamp = new class() implements StampInterface {};
 
 		$manager = $this->createManager(["queue" => $this->createListableTransport()], $bus);
-		$manager->enqueue($this->createTask(null), [$stamp]);
+		$manager->enqueue($this->createTask(), [$stamp]);
 
 		self::assertNotNull($capturedEnvelope);
 		self::assertNotEmpty($capturedEnvelope->all($stamp::class));

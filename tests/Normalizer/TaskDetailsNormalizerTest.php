@@ -28,10 +28,7 @@ final class TaskDetailsNormalizerTest extends TestCase
 		return new readonly class($label) extends Task {
 			public function __construct (
 				private string $label,
-			)
-			{
-				parent::__construct();
-			}
+			) {}
 
 			#[\Override]
 			public function getMetaData () : TaskMetaData
