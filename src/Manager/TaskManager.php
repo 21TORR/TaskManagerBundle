@@ -30,14 +30,13 @@ final readonly class TaskManager
 	 */
 	public function enqueue (object $task, array $stamps = []) : string
 	{
-		if ($task instanceof Task)
-		{
-			$uniqueTaskId = $task->getMetaData()->uniqueTaskId;
+		$uniqueTaskId = $task instanceof Task
+			? $task->getMetaData()->uniqueTaskId
+			: null;
 
-			if (null !== $uniqueTaskId)
-			{
-				$stamps[] = new DeduplicateStamp($uniqueTaskId);
-			}
+		if (null !== $uniqueTaskId)
+		{
+			$stamps[] = new DeduplicateStamp($uniqueTaskId);
 		}
 
 		$id = new TaskIdStamp();
