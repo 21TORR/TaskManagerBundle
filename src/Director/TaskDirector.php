@@ -40,9 +40,6 @@ final readonly class TaskDirector
 		$run = $this->logModel->createRunForTask($log);
 		$this->logModel->flush();
 
-		// store latest run
-		$this->taskIdentifier->setLatestRun($log, $run);
-
 		return new RunDirector($this->logModel, $run);
 	}
 }

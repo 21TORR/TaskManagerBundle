@@ -55,7 +55,7 @@ readonly class TaskIdentificationMiddleware implements MiddlewareInterface
 		{
 			$run = $this->getTaskRun($logEntry, $envelope->getMessage());
 
-			if (null !== $run && !$run->isFinished)
+			if (null !== $run)
 			{
 				$run->abort(false, $e->getMessage());
 				$this->logModel->flush();
@@ -70,7 +70,7 @@ readonly class TaskIdentificationMiddleware implements MiddlewareInterface
 		{
 			$run = $this->getTaskRun($logEntry, $envelope->getMessage());
 
-			if (null !== $run && !$run->isFinished)
+			if (null !== $run)
 			{
 				$run->abort(
 					success: true,
@@ -98,7 +98,7 @@ readonly class TaskIdentificationMiddleware implements MiddlewareInterface
 			return $this->logModel->createRunForTask($log);
 		}
 
-		return $this->taskIdentifier->getLatestRun($message);
+		return $log->getLastUnfinishedRun();
 	}
 
 	/**
