@@ -51,17 +51,17 @@ readonly class TaskIdentificationMiddleware implements MiddlewareInterface
 			// push message through the stack
 			$envelope = $stack->next()->handle($envelope, $stack);
 		}
-		catch (ExceptionInterface $e)
+		catch (ExceptionInterface $exception)
 		{
 			$run = $this->getTaskRun($logEntry, $envelope->getMessage());
 
 			if (null !== $run)
 			{
-				$run->abort(false, $e->getMessage());
+				$run->abort(false, $exception->getMessage());
 				$this->logModel->flush();
 			}
 
-			throw $e;
+			throw $exception;
 		}
 
 		$handledStamp = $envelope->last(HandledStamp::class);
