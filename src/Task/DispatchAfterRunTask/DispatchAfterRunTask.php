@@ -18,12 +18,9 @@ use Torr\TaskManager\Transport\TransportsHelper;
 readonly class DispatchAfterRunTask extends Task implements TaskManagerInternalTask
 {
 	public function __construct (
-		public Task $task,
+		public object $task,
 		public array|string $transportNames = [],
-	)
-	{
-		parent::__construct();
-	}
+	) {}
 
 	/**
 	 *
@@ -31,8 +28,12 @@ readonly class DispatchAfterRunTask extends Task implements TaskManagerInternalT
 	#[\Override]
 	public function getMetaData () : TaskMetaData
 	{
+		$label = $this->task instanceof Task
+			? $this->task->getMetaData()->label
+			: get_debug_type($this->task);
+
 		return new TaskMetaData(
-			\sprintf("Redispatch task '%s' after the current run", $this->task->getMetaData()->label),
+			\sprintf("Redispatch task '%s' after the current run", $label),
 		);
 	}
 }

@@ -163,7 +163,7 @@ final class LogCleanerTest extends TestCase
 		// The TaskLog created below has timeQueued ≈ now (real system clock),
 		// which is newer than TTL purge date, so the cutoff entry should override.
 		$clock = new MockClock();
-		$cutoffEntry = new TaskLog($this->createTask());
+		$cutoffEntry = new TaskLog($this->createTask(), "my-uuid");
 
 		$capturedOldestTimestamp = null;
 

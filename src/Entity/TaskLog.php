@@ -69,12 +69,12 @@ class TaskLog
 	/**
 	 */
 	public function __construct (
-		Task $task,
+		object $task,
+		string $uuid,
 	)
 	{
 		$this->taskClass = $task::class;
-		/** @phpstan-ignore-next-line property.deprecated (The uuid integration will be refactored in v4) */
-		$this->taskId = $task->ulid;
+		$this->taskId = $uuid;
 		$this->runs = new ArrayCollection();
 		$this->timeQueued = now();
 	}

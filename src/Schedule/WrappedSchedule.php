@@ -42,7 +42,7 @@ readonly class WrappedSchedule implements ScheduleProviderInterface
 	 */
 	public function cron (
 		string $cronExpression,
-		Task $task,
+		object $task,
 		\DateTimeZone|string|null $timezone = null,
 	) : static
 	{
@@ -60,7 +60,7 @@ readonly class WrappedSchedule implements ScheduleProviderInterface
 	 */
 	public function every (
 		string|int|\DateInterval $frequency,
-		Task $task,
+		object $task,
 		string|\DateTimeImmutable|null $from = null,
 		string|\DateTimeImmutable $until = new \DateTimeImmutable('3000-01-01'),
 	) : static

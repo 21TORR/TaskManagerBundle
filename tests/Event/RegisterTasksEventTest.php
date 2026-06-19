@@ -22,10 +22,7 @@ final class RegisterTasksEventTest extends TestCase
 			public function __construct (
 				private string $label,
 				private ?string $group,
-			)
-			{
-				parent::__construct();
-			}
+			) {}
 
 			#[\Override]
 			public function getMetaData () : TaskMetaData

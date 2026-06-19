@@ -3,6 +3,7 @@
 namespace Tests\Torr\TaskManager\Entity;
 
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Clock\Test\ClockSensitiveTrait;
 use Torr\TaskManager\Entity\TaskLog;
 use Torr\TaskManager\Exception\Log\InvalidLogActionException;
 use Torr\TaskManager\Task\Task;
@@ -13,8 +14,9 @@ use Torr\TaskManager\Task\TaskMetaData;
  */
 final class TaskLogTest extends TestCase
 {
-	// region Helpers
+	use ClockSensitiveTrait;
 
+	// region Helpers
 	private function createTask () : Task
 	{
 		// @phpstan-ignore-next-line 21torr.custom.task.suffix
@@ -29,7 +31,7 @@ final class TaskLogTest extends TestCase
 
 	private function createLog () : TaskLog
 	{
-		return new TaskLog($this->createTask());
+		return new TaskLog($this->createTask(), "my-uuid");
 	}
 
 	// endregion
@@ -144,17 +146,20 @@ final class TaskLogTest extends TestCase
 	{
 		$log = $this->createLog();
 
+		self::mockTime("2026-06-18 12:00:00");
 		$run1 = $log->createRun();
+		self::mockTime("2026-06-18 12:00:05");
 		$run1->finish(false, null);
 
 		$run2 = $log->createRun();
+		self::mockTime("2026-06-18 12:00:10");
 		$run2->finish(true, null);
 
 		$total = $log->getTotalDuration();
 
 		self::assertGreaterThan(0, $total);
 		self::assertEqualsWithDelta(
-			($run1->duration ?? 0) + ($run2->duration ?? 0),
+			10e9,
 			$total,
 			0.001,
 		);
@@ -182,16 +187,15 @@ final class TaskLogTest extends TestCase
 	public function testTaskIdMatchesTaskUlid () : void
 	{
 		$task = $this->createTask();
-		$log = new TaskLog($task);
+		$log = new TaskLog($task, "my-uuid");
 
-		/** @phpstan-ignore-next-line property.deprecated (The uuid integration will be refactored in v4) */
-		self::assertSame($task->ulid, $log->taskId);
+		self::assertSame("my-uuid", $log->taskId);
 	}
 
 	public function testTaskClassMatchesTaskClass () : void
 	{
 		$task = $this->createTask();
-		$log = new TaskLog($task);
+		$log = new TaskLog($task, "my-uuid");
 
 		self::assertSame($task::class, $log->taskClass);
 	}

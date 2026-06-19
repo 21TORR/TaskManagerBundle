@@ -38,11 +38,13 @@ readonly class DispatchAfterRunTaskHandler
 			$task->task::class,
 		));
 
-		$stamps = !empty($task->transportNames)
-			? [new TransportNamesStamp($task->transportNames)]
-			: [];
+		$stamps = [];
 
-		$wrappedTask = $task->task->withNewTaskUlid();
-		$this->taskManager->enqueue($wrappedTask, $stamps);
+		if (!empty($task->transportNames))
+		{
+			$stamps[] = new TransportNamesStamp($task->transportNames);
+		}
+
+		$this->taskManager->enqueue($task->task, $stamps);
 	}
 }

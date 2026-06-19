@@ -2,31 +2,11 @@
 
 namespace Torr\TaskManager\Task;
 
-use Symfony\Component\Uid\UuidV7;
-
 /**
  * A runnable task
  */
 abstract readonly class Task
 {
-	/**
-	 * @deprecated use $taskId instead
-	 *
-	 * @todo remove in 4.0
-	 *
-	 * @phpstan-ignore-next-line property.deprecated (The uuid integration will be refactored in v4)
-	 */
-	public string $ulid;
-
-	/**
-	 */
-	public function __construct ()
-	{
-		$uuid = new UuidV7()->toString();
-		/** @phpstan-ignore-next-line property.deprecated (The uuid integration will be refactored in v4) */
-		$this->ulid = $uuid;
-	}
-
 	/**
 	 * Defines the metadata for this task.
 	 *
@@ -34,18 +14,6 @@ abstract readonly class Task
 	 * serialized messages as well.
 	 */
 	abstract public function getMetaData () : TaskMetaData;
-
-	/**
-	 *
-	 */
-	public function withNewTaskUlid () : static
-	{
-		$uuid = new UuidV7()->toString();
-
-		return clone($this, [
-			"ulid" => $uuid,
-		]);
-	}
 
 	/**
 	 * Is called before the task is stored in the task log entry.
