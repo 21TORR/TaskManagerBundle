@@ -1,3 +1,9 @@
+vNext
+=====
+
+* (impprovement) Display class name of wrapped Task when running `sf debug:scheduler`
+
+
 3.4.1
 =====
 
