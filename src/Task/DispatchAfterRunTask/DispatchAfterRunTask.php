@@ -15,7 +15,7 @@ use Torr\TaskManager\Transport\TransportsHelper;
  * redispatches the given task.
  */
 #[AsMessage(transport: TransportsHelper::INTERNAL_TRANSPORT_NAME)]
-readonly class DispatchAfterRunTask extends Task implements TaskManagerInternalTask
+readonly class DispatchAfterRunTask extends Task implements TaskManagerInternalTask, \Stringable
 {
 	public function __construct (
 		public object $task,
@@ -35,5 +35,11 @@ readonly class DispatchAfterRunTask extends Task implements TaskManagerInternalT
 		return new TaskMetaData(
 			\sprintf("Redispatch task '%s' after the current run", $label),
 		);
+	}
+
+	#[\Override]
+	public function __toString () : string
+	{
+		return $this->task::class;
 	}
 }
