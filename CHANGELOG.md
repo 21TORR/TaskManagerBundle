@@ -20,6 +20,7 @@
 
 * (impprovement) Display class name of wrapped Task when running `sf debug:scheduler`
 * (bug) Add proper support for fetching and validating Tasks that are configured via `#[AsMessage(…)]` attribute.
+* (internal) Remove previously used Tag `task-manager.task`.
 
 
 3.4.1
