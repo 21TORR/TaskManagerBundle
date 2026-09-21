@@ -5,6 +5,7 @@ namespace Torr\TaskManager\DependencyInjection;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Torr\TaskManager\Config\BundleConfig;
+use Torr\TaskManager\Task\Task;
 
 /**
  * Compiler pass, that collects all tasks from the container that are from the app
@@ -22,20 +23,27 @@ readonly class FindTaskClassesCompilerPass implements CompilerPassInterface
 	{
 		$taskClasses = [];
 
-		foreach ($container->findTaggedServiceIds("task-manager.task") as $taskServiceId => $config)
+		foreach ($container->getDefinitions() as $definition)
 		{
-			$definition = $container->getDefinition($taskServiceId);
 			$taskFQCN = $definition->getClass();
 
 			if (null !== $taskFQCN && str_starts_with($taskFQCN, "App\\"))
 			{
-				$taskClasses[] = $taskFQCN;
-			}
+				$reflection = $container->getReflectionClass($taskFQCN, false);
 
-			// Remove task service definition, as these must never be a service
-			// in the actual runtime. We just use the mechanism to collect all
-			// tasks in the app.
-			$container->removeDefinition($taskServiceId);
+				if (null === $reflection || !$reflection->isSubclassOf(Task::class))
+				{
+					continue;
+				}
+
+				$taskClasses[] = $taskFQCN;
+
+				// Ensure that our Task classes are removed from the container definitions. Depending on the way
+				// the Tasks are registered (either via `AsMessage` attribute or via `messenger.yaml` config),
+				// they'll be excluded automatically. This happens automatically when the `AsMessage` attribute is being used.
+				// Here we're making sure that this also happens when using the YAML config file.
+				$definition->addTag("container.excluded");
+			}
 		}
 
 		$container->getDefinition(BundleConfig::class)

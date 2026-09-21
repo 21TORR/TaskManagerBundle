@@ -2,6 +2,7 @@ vNext
 =====
 
 * (impprovement) Display class name of wrapped Task when running `sf debug:scheduler`
+* (bug) Add proper support for fetching and validating Tasks that are configured via `#[AsMessage(…)]` attribute.
 
 
 3.4.1
