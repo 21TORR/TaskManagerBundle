@@ -8,6 +8,7 @@ use Symfony\Component\Messenger\Transport\Sync\SyncTransport;
 use Symfony\Component\Messenger\Transport\TransportInterface;
 use Torr\TaskManager\Config\BundleConfig;
 use Torr\TaskManager\Exception\Transport\InvalidMessageTransportException;
+use Torr\TaskManager\Task\DispatchAfterRunTask\DispatchAfterRunTask;
 
 /**
  * Helper to interact with transports of the Symfony messenger component.
@@ -45,6 +46,21 @@ final readonly class TransportsHelper
 		}
 
 		return false;
+	}
+
+	/**
+	 */
+	public function isSyncTransport (string $name, TransportInterface $transport) : bool
+	{
+		if (self::INTERNAL_TRANSPORT_NAME === $name)
+		{
+			return false;
+		}
+
+		if ($transport instanceof SyncTransport)
+		{
+			return true;
+		}
 	}
 
 	/**
