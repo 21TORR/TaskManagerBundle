@@ -48,11 +48,6 @@ final class QueueTasksCommand extends Command
 		$io = new TorrStyle($input, $output);
 		$io->title("Task Manager: Queue Task");
 
-		if ($this->receiverHelper->hasSyncTransport())
-		{
-			$io->caution("The app is using sync transports: that means that registered tasks are directly worked on.");
-		}
-
 		try
 		{
 			[$tasksToQueue, $taskPassedExplicitly] = $this->getTasksToQueue($input, $io);
@@ -172,21 +167,21 @@ final class QueueTasksCommand extends Command
 	private function formatTaskLabel (Task $task) : string
 	{
 		$metaData = $task->getMetaData();
-
-		if (null !== $metaData->group)
-		{
-			return \sprintf(
-				"<fg=blue>%s</>: %s (<fg=yellow>%s</>)",
-				$metaData->group,
-				$metaData->label,
-				$metaData->getKey(),
-			);
-		}
-
-		return \sprintf(
+		$label = \sprintf(
 			"%s (<fg=yellow>%s</>)",
 			$metaData->label,
 			$metaData->getKey(),
 		);
+
+		if (null !== $metaData->group)
+		{
+			return \sprintf(
+				"<fg=blue>%s</>: %s",
+				$metaData->group,
+				$label,
+			);
+		}
+
+		return $label;
 	}
 }
