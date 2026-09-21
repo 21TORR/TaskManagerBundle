@@ -63,7 +63,7 @@ class TaskLog
 
 	/** @var Collection<int, TaskRun> */
 	#[ORM\OneToMany(mappedBy: "taskLog", targetEntity: TaskRun::class, cascade: ["remove"], orphanRemoval: true)]
-	#[ORM\OrderBy(["timeStarted" => "asc"])]
+	#[ORM\OrderBy(["timeStarted" => "ASC"])]
 	public private(set) Collection $runs;
 
 	/**

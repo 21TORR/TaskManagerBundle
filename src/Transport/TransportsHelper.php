@@ -2,12 +2,16 @@
 
 namespace Torr\TaskManager\Transport;
 
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 use Symfony\Component\DependencyInjection\ServiceLocator;
+use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\Transport\Sender\SendersLocatorInterface;
 use Symfony\Component\Messenger\Transport\Sync\SyncTransport;
 use Symfony\Component\Messenger\Transport\TransportInterface;
 use Torr\TaskManager\Config\BundleConfig;
 use Torr\TaskManager\Exception\Transport\InvalidMessageTransportException;
+use Torr\TaskManager\Task\Task;
 
 /**
  * Helper to interact with transports of the Symfony messenger component.
@@ -24,6 +28,8 @@ final readonly class TransportsHelper
 		/** @var ServiceLocator<TransportInterface> */
 		private ServiceLocator $transports,
 		private BundleConfig $bundleConfig,
+		#[Autowire(service: "messenger.senders_locator")]
+		private SendersLocatorInterface $sendersLocator,
 	) {}
 
 	/**
@@ -32,6 +38,32 @@ final readonly class TransportsHelper
 	public function hasSyncTransport () : bool
 	{
 		foreach ($this->getAllTransports() as $name => $transport)
+		{
+			if (self::INTERNAL_TRANSPORT_NAME === $name)
+			{
+				continue;
+			}
+
+			if ($transport instanceof SyncTransport)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * @param Envelope|Task|object $message
+	 */
+	public function usesSyncTransport (object $message) : bool
+	{
+		if (!$message instanceof Envelope)
+		{
+			$message = new Envelope($message);
+		}
+
+		foreach ($this->sendersLocator->getSenders($message) as $name => $transport)
 		{
 			if (self::INTERNAL_TRANSPORT_NAME === $name)
 			{

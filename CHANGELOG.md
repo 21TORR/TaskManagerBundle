@@ -1,3 +1,9 @@
+4.1.0
+=====
+
+* (feature) Show "uses sync transport" info per task.
+
+
 4.0.0
 =====
 

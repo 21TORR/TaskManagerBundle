@@ -9,6 +9,7 @@ use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\DeduplicateStamp;
 use Symfony\Component\Messenger\Stamp\StampInterface;
 use Symfony\Component\Messenger\Transport\Receiver\ListableReceiverInterface;
+use Symfony\Component\Messenger\Transport\Sender\SendersLocatorInterface;
 use Symfony\Component\Messenger\Transport\TransportInterface;
 use Torr\TaskManager\Config\BundleConfig;
 use Torr\TaskManager\Manager\TaskManager;
@@ -79,7 +80,11 @@ final class TaskManagerTest extends TestCase
 
 		$locator = new ServiceLocator($factories);
 		$config = new BundleConfig(sortedQueues: array_keys($transports));
-		$helper = new TransportsHelper($locator, $config);
+		$helper = new TransportsHelper(
+			$locator,
+			$config,
+			self::createStub(SendersLocatorInterface::class),
+		);
 
 		return new TaskManager($helper, $bus);
 	}
