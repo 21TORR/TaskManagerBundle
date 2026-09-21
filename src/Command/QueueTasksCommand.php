@@ -175,11 +175,16 @@ final class QueueTasksCommand extends Command
 
 		if (null !== $metaData->group)
 		{
-			return \sprintf(
+			$label = \sprintf(
 				"<fg=blue>%s</>: %s",
 				$metaData->group,
 				$label,
 			);
+		}
+
+		if ($this->receiverHelper->usesSyncTransport($task))
+		{
+			$label = \sprintf("<fg=red>[sync]</> %s", $label);
 		}
 
 		return $label;

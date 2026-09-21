@@ -4,6 +4,7 @@ namespace Tests\Torr\TaskManager\Transport;
 
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ServiceLocator;
+use Symfony\Component\Messenger\Transport\Sender\SendersLocatorInterface;
 use Torr\TaskManager\Config\BundleConfig;
 use Torr\TaskManager\Transport\TransportsHelper;
 
@@ -33,7 +34,11 @@ final class TransportsHelperTest extends TestCase
 			"scheduler_3" => static fn () => null,
 		]);
 
-		$helper = new TransportsHelper($locator, $config);
+		$helper = new TransportsHelper(
+			$locator,
+			$config,
+			self::createStub(SendersLocatorInterface::class),
+		);
 
 		self::assertSame([
 			"scheduler_1",
