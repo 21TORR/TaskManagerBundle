@@ -3,14 +3,12 @@
 namespace Torr\TaskManager\Transport;
 
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
-use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Transport\Sender\SendersLocatorInterface;
 use Symfony\Component\Messenger\Transport\Sync\SyncTransport;
 use Symfony\Component\Messenger\Transport\TransportInterface;
 use Torr\TaskManager\Config\BundleConfig;
-use Torr\TaskManager\Exception\Transport\InvalidMessageTransportException;
 use Torr\TaskManager\Task\Task;
 
 /**
@@ -56,7 +54,7 @@ final readonly class TransportsHelper
 	/**
 	 * @param Envelope|Task|object $message
 	 */
-	public function usesSyncTransport (object $message) : bool
+	public function isUsingSyncTransport (object $message) : bool
 	{
 		if (!$message instanceof Envelope)
 		{
@@ -99,24 +97,6 @@ final readonly class TransportsHelper
 		}
 
 		return $transports;
-	}
-
-	public function getTransport (string $queueName) : TransportInterface
-	{
-		try
-		{
-			return $this->transports->get($queueName);
-		}
-		catch (ServiceNotFoundException $exception)
-		{
-			throw new InvalidMessageTransportException(
-				message: \sprintf(
-					"No transport found with queue name '%s'",
-					$queueName,
-				),
-				previous: $exception,
-			);
-		}
 	}
 
 	/**

@@ -71,4 +71,16 @@ final readonly class TaskManager
 	{
 		return $this->transportsHelper->hasSyncTransport();
 	}
+
+	/**
+	 * Returns whether the given task is using a sync transport.
+	 *
+	 * @param Envelope|Task|object $task
+	 *
+	 * @api
+	 */
+	public function isUsingSyncTransport (object $task) : bool
+	{
+		return $this->transportsHelper->isUsingSyncTransport($task);
+	}
 }

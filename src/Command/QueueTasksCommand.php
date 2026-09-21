@@ -13,7 +13,6 @@ use Torr\TaskManager\Exception\Registry\UnknownTaskKeyException;
 use Torr\TaskManager\Manager\TaskManager;
 use Torr\TaskManager\Registry\TaskRegistry;
 use Torr\TaskManager\Task\Task;
-use Torr\TaskManager\Transport\TransportsHelper;
 
 #[AsCommand("task-manager:queue")]
 final class QueueTasksCommand extends Command
@@ -23,7 +22,6 @@ final class QueueTasksCommand extends Command
 	public function __construct (
 		private readonly TaskRegistry $taskRegistry,
 		private readonly TaskManager $taskManager,
-		private readonly TransportsHelper $receiverHelper,
 		private readonly HostingEnvironment $hostingEnvironment,
 	)
 	{
@@ -120,6 +118,16 @@ final class QueueTasksCommand extends Command
 			}
 		}
 
+		$hasSyncTasks = array_any(
+			$flatTasks,
+			$this->taskManager->isUsingSyncTransport(...),
+		);
+
+		if ($hasSyncTasks)
+		{
+			$io->caution("For some tasks, this app is using sync transports: that means that these tasks are directly worked on.");
+		}
+
 		/** @var string[] $selectedOptions */
 		$selectedOptions = $io->choice(
 			"Which tasks should be queued?",
@@ -182,7 +190,7 @@ final class QueueTasksCommand extends Command
 			);
 		}
 
-		if ($this->receiverHelper->usesSyncTransport($task))
+		if ($this->taskManager->isUsingSyncTransport($task))
 		{
 			$label = \sprintf("<fg=red>[sync]</> %s", $label);
 		}
