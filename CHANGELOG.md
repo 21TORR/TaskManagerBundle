@@ -1,3 +1,14 @@
+4.0.0
+=====
+
+* (bc) `Task` has no constructor anymore, so you need to remove your `parent::__construct()` calls.
+* (bc) Remove `Task::$ulid` and `Task::withNewTaskUlid()`. The task id is not stored in the task itself anymore.
+* (feature) Add `TaskIdStamp` and `TaskIdentifier`: the task id is attached as messenger stamp on dispatch and can be resolved for every message.
+* (internal) Replace `MessengerEventListener` with `TaskIdentificationMiddleware`, so that the task log integration no longer depends on the used transport.
+* (feature) Support arbitrary messages: `TaskManager::enqueue()`, `WrappedSchedule::cron()`, `WrappedSchedule::every()` and `DispatchAfterRunTask` accept any `object` now and log messages that don't extend `Task` as well.
+* (improvement) Log a critical error instead of failing, if a task can't be identified during a run.
+
+
 3.4.1
 =====
 
