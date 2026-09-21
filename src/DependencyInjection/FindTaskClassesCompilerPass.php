@@ -23,27 +23,29 @@ readonly class FindTaskClassesCompilerPass implements CompilerPassInterface
 	{
 		$taskClasses = [];
 
-		foreach ($container->getDefinitions() as $definition)
+		foreach ($container->getDefinitions() as $taskServiceId => $definition)
 		{
 			$taskFQCN = $definition->getClass();
 
-			if (null !== $taskFQCN && str_starts_with($taskFQCN, "App\\"))
+			if (null === $taskFQCN || !str_starts_with($taskFQCN, "App\\"))
 			{
-				$reflection = $container->getReflectionClass($taskFQCN, false);
-
-				if (null === $reflection || !$reflection->isSubclassOf(Task::class))
-				{
-					continue;
-				}
-
-				$taskClasses[] = $taskFQCN;
-
-				// Ensure that our Task classes are removed from the container definitions. Depending on the way
-				// the Tasks are registered (either via `AsMessage` attribute or via `messenger.yaml` config),
-				// they'll be excluded automatically. This happens automatically when the `AsMessage` attribute is being used.
-				// Here we're making sure that this also happens when using the YAML config file.
-				$definition->addTag("container.excluded");
+				continue;
 			}
+
+			$reflection = $container->getReflectionClass($taskFQCN, false);
+
+			if (null === $reflection || !$reflection->isSubclassOf(Task::class))
+			{
+				continue;
+			}
+
+			$taskClasses[] = $taskFQCN;
+
+			// Ensure that our Task classes are removed from the container definitions. Depending on the way
+			// the Tasks are registered (either via `AsMessage` attribute or via `messenger.yaml` config),
+			// they'll be excluded automatically. This happens automatically when the `AsMessage` attribute is being used.
+			// Here we're making sure that this also happens when using the YAML config file.
+			$definition->addTag("container.excluded");
 		}
 
 		$container->getDefinition(BundleConfig::class)
