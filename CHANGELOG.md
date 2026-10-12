@@ -1,7 +1,7 @@
 4.1.1 (unreleased)
 ==================
 
-* (bug) Keep the task id of the `TaskIdStamp` when the message is serialized by a transport. Previously, a new task id was generated on deserialization, so the worker created a second task log entry.
+* (bug) Keep the task id of the `TaskIdStamp` stable through (de-)serialization.
 
 
 4.1.0
