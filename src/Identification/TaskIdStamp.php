@@ -13,9 +13,11 @@ readonly class TaskIdStamp implements StampInterface
 	public string $taskId;
 
 	/**
+	 * The task id is only passed when the stamp is deserialized (e.g. by a transport), so that it is kept.
+	 * Otherwise a new task id is generated.
 	 */
-	public function __construct ()
+	public function __construct (?string $taskId = null)
 	{
-		$this->taskId = new UuidV7()->toRfc4122();
+		$this->taskId = $taskId ?? new UuidV7()->toRfc4122();
 	}
 }
