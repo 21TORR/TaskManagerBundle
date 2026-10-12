@@ -1,5 +1,5 @@
-4.1.1 (unreleased)
-==================
+4.1.1 
+======
 
 * (bug) Keep the task id of the `TaskIdStamp` stable through (de-)serialization.
 
