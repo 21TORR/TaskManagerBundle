@@ -22,7 +22,20 @@ final class RegisterTasksEvent
 	 *
 	 * @throws DuplicateTaskRegisteredException
 	 */
-	public function register (Task $task) : self
+	public function register (Task ...$tasks) : self
+	{
+		foreach ($tasks as $task)
+		{
+			$this->registerTask($task);
+		}
+
+		return $this;
+	}
+
+	/**
+	 *
+	 */
+	private function registerTask (Task $task) : void
 	{
 		$definition = $task->getMetaData();
 		$key = $definition->getKey();
@@ -36,8 +49,6 @@ final class RegisterTasksEvent
 		}
 
 		$this->tasks[$key] = $task;
-
-		return $this;
 	}
 
 	/**

@@ -1,3 +1,9 @@
+4.1.2 (unreleased)
+=====
+
+* (improvement) `RegisterTasksEvent::register()` is now variadic.
+
+
 4.1.1 
 ======
 
