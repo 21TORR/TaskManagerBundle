@@ -8,7 +8,6 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
 use Torr\TaskManager\DependencyInjection\AutoDetectFailureTransportsCompilerPass;
 use Torr\TaskManager\DependencyInjection\FindTaskClassesCompilerPass;
 use Torr\TaskManager\DependencyInjection\TaskManagerBundleExtension;
-use Torr\TaskManager\Task\Task;
 
 final class TaskManagerBundle extends Bundle
 {
@@ -28,9 +27,6 @@ final class TaskManagerBundle extends Bundle
 		$container
 			->addCompilerPass(new AutoDetectFailureTransportsCompilerPass())
 			->addCompilerPass(new FindTaskClassesCompilerPass());
-
-		$container->registerForAutoconfiguration(Task::class)
-			->addTag("task-manager.task");
 	}
 
 	/**
