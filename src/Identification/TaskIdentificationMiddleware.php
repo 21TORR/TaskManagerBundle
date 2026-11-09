@@ -5,6 +5,7 @@ namespace Torr\TaskManager\Identification;
 use Symfony\Component\Console\Messenger\RunCommandContext;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Exception\ExceptionInterface;
+use Symfony\Component\Messenger\Handler\HandlersLocatorInterface;
 use Symfony\Component\Messenger\Middleware\MiddlewareInterface;
 use Symfony\Component\Messenger\Middleware\StackInterface;
 use Symfony\Component\Messenger\Stamp\HandledStamp;
@@ -25,12 +26,19 @@ readonly class TaskIdentificationMiddleware implements MiddlewareInterface
 		private TaskIdentifier $taskIdentifier,
 		private TaskLogModel $logModel,
 		private TaskDetailsNormalizer $detailsNormalizer,
+		#[Autowire(service: 'messenger.bus.default.messenger.handlers_locator')]
+		private HandlersLocatorInterface $handlersLocator,
 	) {}
 
 	/**
 	 */
 	public function handle (Envelope $envelope, StackInterface $stack) : Envelope
 	{
+		if (!$this->isHandledLocally($envelope))
+		{
+			return $stack->next()->handle($envelope, $stack);
+		}
+
 		$stamp = $envelope->last(TaskIdStamp::class);
 
 		if (null === $stamp)
@@ -84,6 +92,16 @@ readonly class TaskIdentificationMiddleware implements MiddlewareInterface
 		$this->logModel->flush();
 
 		return $envelope;
+	}
+
+	private function isHandledLocally (Envelope $message) : bool
+	{
+		foreach ($this->handlersLocator->getHandlers($message) as $handler)
+		{
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
