@@ -9,6 +9,7 @@ use Symfony\Component\Messenger\Transport\InMemory\InMemoryTransport;
 use Symfony\Component\Messenger\Transport\Receiver\ListableReceiverInterface;
 use Symfony\Component\Messenger\Transport\Receiver\MessageCountAwareInterface;
 use Symfony\Component\Messenger\Transport\Receiver\ReceiverInterface;
+use Torr\TaskManager\Exception\Queue\InvalidQueuedTaskIdException;
 use Torr\TaskManager\Exception\Queue\QueuedTaskAlreadyStartedException;
 use Torr\TaskManager\Exception\Queue\QueuedTaskNotFoundException;
 use Torr\TaskManager\Exception\Queue\UnknownQueueException;
@@ -80,6 +81,7 @@ final readonly class QueueManager
 	/**
 	 * Finds a single queued task.
 	 *
+	 * @throws InvalidQueuedTaskIdException
 	 * @throws UnknownQueueException
 	 * @throws UnsupportedQueueOperationException
 	 */
@@ -102,6 +104,7 @@ final readonly class QueueManager
 	 *
 	 * @return QueuedTask the removed task
 	 *
+	 * @throws InvalidQueuedTaskIdException
 	 * @throws UnknownQueueException
 	 * @throws UnsupportedQueueOperationException
 	 * @throws QueuedTaskNotFoundException
