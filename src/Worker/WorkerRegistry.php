@@ -22,7 +22,7 @@ use function Symfony\Component\Clock\now;
 final readonly class WorkerRegistry
 {
 	private const string INDEX_KEY = "torr.task_manager.worker_ids";
-	private const string WORKER_KEY_PREFIX = "torr.task_manager.worker.";
+	private const string WORKER_KEY_PATTERN = "torr.task_manager.worker.%s";
 
 	/**
 	 * Idle workers send a heartbeat after every loop iteration (throttled), so they are
@@ -51,7 +51,7 @@ final readonly class WorkerRegistry
 	public function getWorkers () : array
 	{
 		$keys = array_map(
-			static fn (string $id) => self::WORKER_KEY_PREFIX . $id,
+			$this->getWorkerKey(...),
 			$this->loadIndex(),
 		);
 
@@ -81,7 +81,7 @@ final readonly class WorkerRegistry
 	public function save (WorkerInfo $worker) : void
 	{
 		// the entry expires on its own, if the worker stops sending heartbeats (e.g. because it crashed)
-		$item = $this->cache->getItem(self::WORKER_KEY_PREFIX . $worker->id);
+		$item = $this->cache->getItem($this->getWorkerKey($worker->id));
 		$item->set($worker);
 		$item->expiresAfter($worker->isBusy ? self::BUSY_TIMEOUT_SECONDS : self::IDLE_TIMEOUT_SECONDS);
 		$this->cache->save($item);
@@ -101,7 +101,7 @@ final readonly class WorkerRegistry
 	 */
 	public function remove (string $workerId) : void
 	{
-		$this->cache->deleteItem(self::WORKER_KEY_PREFIX . $workerId);
+		$this->cache->deleteItem($this->getWorkerKey($workerId));
 
 		$this->saveIndex(array_values(array_filter(
 			$this->loadIndex(),
@@ -133,13 +133,21 @@ final readonly class WorkerRegistry
 	{
 		$ids = array_values(array_filter(
 			$ids,
-			fn (string $id) => $this->cache->hasItem(self::WORKER_KEY_PREFIX . $id),
+			fn (string $id) => $this->cache->hasItem($this->getWorkerKey($id)),
 		));
 
 		$item = $this->cache->getItem(self::INDEX_KEY);
 		$item->set($ids);
 		$item->expiresAfter(self::BUSY_TIMEOUT_SECONDS);
 		$this->cache->save($item);
+	}
+
+	/**
+	 * Returns the cache key of the worker with the given id
+	 */
+	private function getWorkerKey (string $workerId) : string
+	{
+		return \sprintf(self::WORKER_KEY_PATTERN, $workerId);
 	}
 
 	/**

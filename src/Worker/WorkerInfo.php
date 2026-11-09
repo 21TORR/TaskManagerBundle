@@ -2,9 +2,12 @@
 
 namespace Torr\TaskManager\Worker;
 
+use Symfony\Component\DependencyInjection\Attribute\Exclude;
+
 /**
  * Snapshot of a running messenger worker, as reported by its last heartbeat.
  */
+#[Exclude]
 final readonly class WorkerInfo
 {
 	/**
