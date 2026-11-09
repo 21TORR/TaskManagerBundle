@@ -9,6 +9,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
 use Symfony\Component\Messenger\Transport\Receiver\ListableReceiverInterface;
@@ -34,6 +35,7 @@ final class ClearQueueCommand extends Command
 	 */
 	private const int BATCH_SIZE = 500;
 	private const string STOP_WORKERS_COMMAND = "messenger:stop-workers";
+	private const string REASON_FAILURE = "failure queue, clear it explicitly or via `messenger:failed:remove`";
 
 	/**
 	 */
@@ -59,6 +61,7 @@ final class ClearQueueCommand extends Command
 			->setHelp(
 				<<<'HELP'
 					Without <info>--force</> this command only lists the tasks that would be removed.
+					If neither queue names nor <info>--all</> are passed, you can interactively select the queues.
 
 					<info>bin/console %command.name% queue_a queue_b</>
 					<info>bin/console %command.name% --all --force</>
@@ -88,19 +91,28 @@ final class ClearQueueCommand extends Command
 			return self::FAILURE;
 		}
 
-		$receivers = $this->resolveReceivers($input, $io);
+		$resolved = $this->resolveReceivers($input, $io);
 
-		if (null === $receivers)
+		if (null === $resolved)
 		{
 			return self::FAILURE;
 		}
 
+		[$receivers, $skipped] = $resolved;
+
 		if (empty($receivers))
 		{
 			$io->comment("No queues to clear.");
+			$this->printSkippedQueues($io, $skipped);
 
 			return self::SUCCESS;
 		}
+
+		// only failure queues are skipped deliberately, so mention them to not surprise the user
+		$this->printSkippedQueues($io, array_filter(
+			$skipped,
+			static fn (string $reason) => self::REASON_FAILURE === $reason,
+		));
 
 		if (!$force)
 		{
@@ -136,9 +148,10 @@ final class ClearQueueCommand extends Command
 	}
 
 	/**
-	 * Returns the receivers to clear, indexed by queue name. Returns null on invalid input.
+	 * Returns the receivers to clear (indexed by queue name) and the skipped queues (with the reason why they were
+	 * skipped). Returns null on invalid input.
 	 *
-	 * @return array<string, ReceiverInterface>|null
+	 * @return array{array<string, ReceiverInterface>, array<string, string>}|null
 	 */
 	private function resolveReceivers (InputInterface $input, TorrStyle $io) : ?array
 	{
@@ -146,85 +159,174 @@ final class ClearQueueCommand extends Command
 		$queueNames = $input->getArgument("queues");
 		$all = (bool) $input->getOption("all");
 
-		if ($all === !empty($queueNames))
+		if ($all && !empty($queueNames))
 		{
-			$io->error("Either pass the names of the queues to clear or use --all.");
+			$io->error("Either pass the names of the queues to clear or use --all, not both.");
 
 			return null;
 		}
 
-		$transports = $this->transportsHelper->getAllTransports();
-
-		if (!$all)
+		if ($all)
 		{
-			$unknown = array_diff($queueNames, array_keys($transports));
+			// failure transports must be cleared explicitly (or via `messenger:failed:remove`)
+			return $this->getClearableReceivers(skipFailureQueues: true);
+		}
 
-			if (!empty($unknown))
+		if (empty($queueNames))
+		{
+			if (!$input->isInteractive())
 			{
-				$io->error(\sprintf(
-					"Unknown queue(s): %s. Available queues: %s",
-					implode(", ", $unknown),
-					implode(", ", $this->transportsHelper->getOrderedQueueNames()),
-				));
+				$io->error("Either pass the names of the queues to clear or use --all.");
 
 				return null;
 			}
 
-			$receivers = [];
+			return $this->askForReceivers($io);
+		}
 
-			foreach (array_unique($queueNames) as $queueName)
-			{
-				$receiver = $this->getClearableReceiver($queueName, $transports[$queueName]);
+		$transports = $this->transportsHelper->getAllTransports();
+		$unknown = array_diff($queueNames, array_keys($transports));
 
-				if (null === $receiver)
-				{
-					$io->error(\sprintf("The queue '%s' can't be cleared.", $queueName));
+		if (!empty($unknown))
+		{
+			$io->error(\sprintf(
+				"Unknown queue(s): %s. Available queues: %s",
+				implode(", ", $unknown),
+				implode(", ", $this->transportsHelper->getOrderedQueueNames()),
+			));
 
-					return null;
-				}
-
-				$receivers[$queueName] = $receiver;
-			}
-
-			return $receivers;
+			return null;
 		}
 
 		$receivers = [];
 
-		foreach ($this->transportsHelper->getOrderedQueueNames() as $queueName)
+		foreach (array_unique($queueNames) as $queueName)
 		{
-			// failure transports must be cleared explicitly (or via `messenger:failed:remove`)
-			if (\in_array($queueName, $this->bundleConfig->failureTransports, true))
+			$reason = $this->getSkipReason($queueName, $transports[$queueName]);
+
+			if (null !== $reason)
 			{
-				continue;
+				$io->error(\sprintf("Can't clear queue '%s': %s.", $queueName, $reason));
+
+				return null;
 			}
 
-			$receiver = $this->getClearableReceiver($queueName, $transports[$queueName]);
-
-			if (null !== $receiver)
-			{
-				$receivers[$queueName] = $receiver;
-			}
+			$receivers[$queueName] = $transports[$queueName];
 		}
 
-		return $receivers;
+		return [$receivers, []];
 	}
 
 	/**
-	 * Returns the receiver, if the transport is a queue that can be cleared
+	 * Lets the user interactively select the queues to clear
+	 *
+	 * @return array{array<string, ReceiverInterface>, array<string, string>}
 	 */
-	private function getClearableReceiver (string $queueName, TransportInterface $transport) : ?ReceiverInterface
+	private function askForReceivers (TorrStyle $io) : array
 	{
-		if (
-			$transport instanceof SyncTransport
-			|| str_starts_with($queueName, "scheduler_")
-			|| TransportsHelper::INTERNAL_TRANSPORT_NAME === $queueName
-		)
+		[$receivers, $skipped] = $this->getClearableReceivers(skipFailureQueues: false);
+
+		if (empty($receivers))
 		{
-			return null;
+			return [[], $skipped];
 		}
 
-		return $transport;
+		$choices = [];
+
+		foreach ($receivers as $queueName => $receiver)
+		{
+			$choices[$queueName] = $receiver instanceof MessageCountAwareInterface
+				? \sprintf("%d task%s", $receiver->getMessageCount(), 1 !== $receiver->getMessageCount() ? "s" : "")
+				: "unknown number of tasks";
+		}
+
+		$question = new ChoiceQuestion("Which queues do you want to clear? (comma-separated)", $choices);
+		$question->setMultiselect(true);
+
+		/** @var list<string> $selected */
+		$selected = $io->askQuestion($question);
+
+		return [array_intersect_key($receivers, array_flip($selected)), []];
+	}
+
+	/**
+	 * Returns all queues that can be cleared (indexed by queue name and ordered by priority)
+	 * and the skipped queues (with the reason why they were skipped).
+	 *
+	 * @return array{array<string, ReceiverInterface>, array<string, string>}
+	 */
+	private function getClearableReceivers (bool $skipFailureQueues) : array
+	{
+		$transports = $this->transportsHelper->getAllTransports();
+		$receivers = [];
+		$skipped = [];
+
+		foreach ($this->transportsHelper->getOrderedQueueNames() as $queueName)
+		{
+			$reason = $this->getSkipReason($queueName, $transports[$queueName]);
+
+			if (null === $reason && $skipFailureQueues && \in_array($queueName, $this->bundleConfig->failureTransports, true))
+			{
+				$reason = self::REASON_FAILURE;
+			}
+
+			if (null !== $reason)
+			{
+				$skipped[$queueName] = $reason;
+				continue;
+			}
+
+			$receivers[$queueName] = $transports[$queueName];
+		}
+
+		return [$receivers, $skipped];
+	}
+
+	/**
+	 * Returns the reason why the queue can't be cleared, or null if it can be cleared
+	 */
+	private function getSkipReason (string $queueName, TransportInterface $transport) : ?string
+	{
+		return match (true)
+		{
+			TransportsHelper::INTERNAL_TRANSPORT_NAME === $queueName => "internal queue of the task manager",
+			str_starts_with($queueName, "scheduler_") => "scheduler queue",
+			$transport instanceof SyncTransport => "uses a sync transport, tasks are handled directly and never queued",
+			default => null,
+		};
+	}
+
+	/**
+	 * Prints the skipped queues, grouped by the reason why they were skipped
+	 *
+	 * @param array<string, string> $skipped
+	 */
+	private function printSkippedQueues (TorrStyle $io, array $skipped) : void
+	{
+		if (empty($skipped))
+		{
+			return;
+		}
+
+		$byReason = [];
+
+		foreach ($skipped as $queueName => $reason)
+		{
+			$byReason[$reason][] = $queueName;
+		}
+
+		$io->writeln("Skipped queues:");
+
+		foreach ($byReason as $reason => $queueNames)
+		{
+			$io->writeln(\sprintf(
+				"• <fg=yellow>%s</>: %s",
+				implode("</>, <fg=yellow>", $queueNames),
+				$reason,
+			));
+		}
+
+		$io->newLine();
 	}
 
 	/**
@@ -306,6 +408,7 @@ final class ClearQueueCommand extends Command
 		$seenIds = [];
 
 		$progress = $io->createProgressBar($count ?? 0);
+		$progress->setMessage("");
 		$progress->start();
 
 		while (true)

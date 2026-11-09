@@ -11,11 +11,13 @@ use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\Messenger\Command\StopWorkersCommand;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\EventListener\StopWorkerOnRestartSignalListener;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
 use Symfony\Component\Messenger\Transport\InMemory\InMemoryTransport;
 use Symfony\Component\Messenger\Transport\Receiver\ListableReceiverInterface;
 use Symfony\Component\Messenger\Transport\Receiver\MessageCountAwareInterface;
 use Symfony\Component\Messenger\Transport\Sender\SendersLocatorInterface;
+use Symfony\Component\Messenger\Transport\Sync\SyncTransport;
 use Symfony\Component\Messenger\Transport\TransportInterface;
 use Torr\TaskManager\Command\ClearQueueCommand;
 use Torr\TaskManager\Config\BundleConfig;
@@ -81,6 +83,62 @@ final class ClearQueueCommandTest extends TestCase
 		self::assertCount(2, $app->getRejected());
 		self::assertSame(2, $failed->getMessageCount());
 		self::assertSame(2, $scheduler->getMessageCount());
+		self::assertStringContainsString("failure queue, clear it explicitly", $tester->getDisplay());
+	}
+
+	/**
+	 *
+	 */
+	public function testExplainsWhyNoQueuesCanBeCleared () : void
+	{
+		$sync = new SyncTransport(self::createStub(MessageBusInterface::class));
+
+		[$tester] = $this->createTester([
+			"app" => $sync,
+			"app_urgent" => $sync,
+			"scheduler_default" => $this->createListableTransport(1),
+			TransportsHelper::INTERNAL_TRANSPORT_NAME => $sync,
+		]);
+
+		self::assertSame(Command::SUCCESS, $tester->execute(["--all" => true]));
+		$display = $tester->getDisplay();
+		self::assertStringContainsString("No queues to clear.", $display);
+		self::assertStringContainsString("app, app_urgent: uses a sync transport", $display);
+		self::assertStringContainsString("scheduler_default: scheduler queue", $display);
+		self::assertStringContainsString("internal queue of the task manager", $display);
+
+		self::assertSame(Command::FAILURE, $tester->execute(["queues" => ["app"]]));
+		self::assertStringContainsString("Can't clear queue 'app': uses a sync transport", $tester->getDisplay());
+	}
+
+	/**
+	 *
+	 */
+	public function testInteractivelySelectQueues () : void
+	{
+		$app = $this->createListableTransport(2);
+		$other = $this->createListableTransport(3);
+		$failed = $this->createListableTransport(4);
+		$scheduler = $this->createListableTransport(5);
+
+		[$tester] = $this->createTester(
+			["app" => $app, "other" => $other, "failed" => $failed, "scheduler_default" => $scheduler],
+			["failed"],
+		);
+
+		$tester->setInputs(["app,failed"]);
+		$tester->execute(["--force" => true]);
+
+		self::assertSame(Command::SUCCESS, $tester->getStatusCode());
+		$display = $tester->getDisplay();
+		self::assertStringContainsString("Which queues do you want to clear?", $display);
+		self::assertStringContainsString("2 tasks", $display);
+		// failure transports can be selected explicitly, scheduler queues can't be cleared at all
+		self::assertStringContainsString("failed", $display);
+		self::assertStringNotContainsString("scheduler_default", $display);
+		self::assertSame(0, $app->getMessageCount());
+		self::assertSame(0, $failed->getMessageCount());
+		self::assertSame(3, $other->getMessageCount());
 	}
 
 	/**
@@ -90,7 +148,7 @@ final class ClearQueueCommandTest extends TestCase
 	{
 		[$tester] = $this->createTester(["app" => $this->createListableTransport(1)]);
 
-		self::assertSame(Command::FAILURE, $tester->execute([]));
+		self::assertSame(Command::FAILURE, $tester->execute([], ["interactive" => false]));
 		self::assertSame(Command::FAILURE, $tester->execute(["queues" => ["app"], "--all" => true]));
 		self::assertSame(Command::FAILURE, $tester->execute(["queues" => ["unknown"]]));
 	}
