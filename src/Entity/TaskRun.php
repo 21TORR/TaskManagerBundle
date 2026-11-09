@@ -52,6 +52,16 @@ class TaskRun
 	public private(set) ?float $waitTime = null;
 
 	/**
+	 * The peak memory usage (in bytes) of the process while the run was handled.
+	 *
+	 * Symfony resets the peak memory usage when a worker receives a message, so this is the peak of this run.
+	 * For sync transports (where there is no worker), it is the peak of the whole request.
+	 * Is null for unfinished runs and runs that were created before this field was added.
+	 */
+	#[ORM\Column(type: Types::BIGINT, nullable: true)]
+	public private(set) ?int $memoryUsage = null;
+
+	/**
 	 */
 	#[ORM\Column(type: Types::BOOLEAN, nullable: true)]
 	public private(set) ?bool $success = null;
@@ -216,5 +226,6 @@ class TaskRun
 		$this->finishedProperly = $finishedProperly;
 		$this->output = $output;
 		$this->duration = new DurationCalculator()->calculateDuration($this->timeStarted, now());
+		$this->memoryUsage = memory_get_peak_usage();
 	}
 }

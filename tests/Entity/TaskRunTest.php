@@ -84,6 +84,15 @@ final class TaskRunTest extends TestCase
 		self::assertEquals(5e9, $run->duration);
 	}
 
+	public function testFinishStoresThePeakMemoryUsage () : void
+	{
+		$run = new TaskRun($this->createLog());
+		self::assertNull($run->memoryUsage);
+
+		$run->finish(true, null);
+		self::assertSame(memory_get_peak_usage(), $run->memoryUsage);
+	}
+
 	public function testFinishMarksAsFailure () : void
 	{
 		$run = new TaskRun($this->createLog());
