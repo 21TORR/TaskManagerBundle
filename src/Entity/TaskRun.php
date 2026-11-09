@@ -43,6 +43,15 @@ class TaskRun
 	public private(set) ?float $duration = null;
 
 	/**
+	 * The time (in nanoseconds) this run waited in the queue before it was started:
+	 * for the first run since the task was queued, for retries since the previous run finished.
+	 *
+	 * Is null for runs that were created before this field was added.
+	 */
+	#[ORM\Column(type: Types::FLOAT, nullable: true)]
+	public private(set) ?float $waitTime = null;
+
+	/**
 	 */
 	#[ORM\Column(type: Types::BOOLEAN, nullable: true)]
 	public private(set) ?bool $success = null;
@@ -73,6 +82,27 @@ class TaskRun
 	{
 		$this->taskLog = $taskLog;
 		$this->timeStarted = now();
+		$this->waitTime = $this->calculateWaitTime();
+	}
+
+	/**
+	 * Calculates the time since the task was queued or since the previous run finished.
+	 */
+	private function calculateWaitTime () : float
+	{
+		$calculator = new DurationCalculator();
+		$previousRun = $this->taskLog->runs->last();
+
+		if (!$previousRun instanceof self)
+		{
+			return $calculator->calculateDuration($this->taskLog->timeQueued, $this->timeStarted);
+		}
+
+		// the duration of the previous run is subtracted, as the time it was running isn't waiting time
+		return max(
+			0.0,
+			$calculator->calculateDuration($previousRun->timeStarted, $this->timeStarted) - (float) $previousRun->duration,
+		);
 	}
 
 	// region Accessors

@@ -45,6 +45,31 @@ final class TaskRunTest extends TestCase
 		self::assertNull($run->finishedProperly);
 	}
 
+	public function testWaitTimeOfFirstRunIsMeasuredSinceQueueing () : void
+	{
+		self::mockTime("2026-06-16 12:00:00");
+		$log = $this->createLog();
+		self::mockTime("2026-06-16 12:00:03");
+		$run = $log->createRun();
+
+		self::assertEquals(3e9, $run->waitTime);
+	}
+
+	public function testWaitTimeOfRetryIsMeasuredSinceThePreviousRunFinished () : void
+	{
+		self::mockTime("2026-06-16 12:00:00");
+		$log = $this->createLog();
+		self::mockTime("2026-06-16 12:00:01");
+		$firstRun = $log->createRun();
+		self::mockTime("2026-06-16 12:00:05");
+		$firstRun->finish(false, null);
+		self::mockTime("2026-06-16 12:00:15");
+		$retry = $log->createRun();
+
+		self::assertEquals(1e9, $firstRun->waitTime);
+		self::assertEquals(10e9, $retry->waitTime);
+	}
+
 	public function testFinishMarksAsSuccessful () : void
 	{
 		self::mockTime("2026-06-16 12:00:00");
