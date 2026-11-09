@@ -3,6 +3,7 @@
 namespace Torr\TaskManager\Identification;
 
 use Symfony\Component\Console\Messenger\RunCommandContext;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Exception\ExceptionInterface;
 use Symfony\Component\Messenger\Handler\HandlersLocatorInterface;

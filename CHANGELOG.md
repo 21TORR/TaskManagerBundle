@@ -1,7 +1,10 @@
-4.1.2 (unreleased)
+4.2.0 (unreleased)
 =====
 
+* (feature) Add `WorkerRegistry`, which keeps track of all running messenger workers (host, PID, transports, status, handled / failed messages, memory usage) via heartbeats stored in the app cache.
+* (feature) Add `task-manager:workers` command to list all running workers.
 * (improvement) `RegisterTasksEvent::register()` is now variadic.
+* (bug) Add missing `Autowire` import in `TaskIdentificationMiddleware`.
 
 
 4.1.1 
