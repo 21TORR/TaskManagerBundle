@@ -10,16 +10,13 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
-use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
 use Symfony\Component\Messenger\Transport\Receiver\ListableReceiverInterface;
 use Symfony\Component\Messenger\Transport\Receiver\MessageCountAwareInterface;
 use Symfony\Component\Messenger\Transport\Receiver\ReceiverInterface;
-use Symfony\Component\Messenger\Transport\Sync\SyncTransport;
-use Symfony\Component\Messenger\Transport\TransportInterface;
 use Torr\Cli\Console\Style\TorrStyle;
-use Torr\TaskManager\Config\BundleConfig;
-use Torr\TaskManager\Identification\TaskIdStamp;
+use Torr\TaskManager\Queue\QueueListing;
+use Torr\TaskManager\Queue\QueueManager;
 use Torr\TaskManager\Task\Task;
 use Torr\TaskManager\Transport\TransportsHelper;
 
@@ -41,7 +38,7 @@ final class ClearQueueCommand extends Command
 	 */
 	public function __construct (
 		private readonly TransportsHelper $transportsHelper,
-		private readonly BundleConfig $bundleConfig,
+		private readonly QueueManager $queueManager,
 	)
 	{
 		parent::__construct();
@@ -118,7 +115,7 @@ final class ClearQueueCommand extends Command
 		{
 			foreach ($receivers as $queueName => $receiver)
 			{
-				$this->listQueue($io, $queueName, $receiver, $limit);
+				$this->listQueue($io, $this->queueManager->getQueuedTasksOfQueue($queueName, $limit), $limit);
 			}
 
 			$io->newLine();
@@ -202,7 +199,7 @@ final class ClearQueueCommand extends Command
 
 		foreach (array_unique($queueNames) as $queueName)
 		{
-			$reason = $this->getSkipReason($queueName, $transports[$queueName]);
+			$reason = $this->transportsHelper->getNonQueueReason($queueName, $transports[$queueName]);
 
 			if (null !== $reason)
 			{
@@ -257,43 +254,21 @@ final class ClearQueueCommand extends Command
 	 */
 	private function getClearableReceivers (bool $skipFailureQueues) : array
 	{
-		$transports = $this->transportsHelper->getAllTransports();
-		$receivers = [];
-		$skipped = [];
+		[$receivers, $skipped] = $this->transportsHelper->getQueues();
 
-		foreach ($this->transportsHelper->getOrderedQueueNames() as $queueName)
+		if ($skipFailureQueues)
 		{
-			$reason = $this->getSkipReason($queueName, $transports[$queueName]);
-
-			if (null === $reason && $skipFailureQueues && \in_array($queueName, $this->bundleConfig->failureTransports, true))
+			foreach ($receivers as $queueName => $receiver)
 			{
-				$reason = self::REASON_FAILURE;
+				if ($this->transportsHelper->isFailureQueue($queueName))
+				{
+					$skipped[$queueName] = self::REASON_FAILURE;
+					unset($receivers[$queueName]);
+				}
 			}
-
-			if (null !== $reason)
-			{
-				$skipped[$queueName] = $reason;
-				continue;
-			}
-
-			$receivers[$queueName] = $transports[$queueName];
 		}
 
 		return [$receivers, $skipped];
-	}
-
-	/**
-	 * Returns the reason why the queue can't be cleared, or null if it can be cleared
-	 */
-	private function getSkipReason (string $queueName, TransportInterface $transport) : ?string
-	{
-		return match (true)
-		{
-			TransportsHelper::INTERNAL_TRANSPORT_NAME === $queueName => "internal queue of the task manager",
-			str_starts_with($queueName, "scheduler_") => "scheduler queue",
-			$transport instanceof SyncTransport => "uses a sync transport, tasks are handled directly and never queued",
-			default => null,
-		};
 	}
 
 	/**
@@ -332,31 +307,27 @@ final class ClearQueueCommand extends Command
 	/**
 	 * Lists (up to the limit) the tasks in the given queue
 	 */
-	private function listQueue (TorrStyle $io, string $queueName, ReceiverInterface $receiver, int $limit) : void
+	private function listQueue (TorrStyle $io, QueueListing $listing, int $limit) : void
 	{
-		$io->section(\sprintf("Queue: %s", $queueName));
+		$io->section(\sprintf("Queue: %s", $listing->queue));
 
-		$count = $receiver instanceof MessageCountAwareInterface
-			? $receiver->getMessageCount()
-			: null;
-
-		if (0 === $count)
+		if (0 === $listing->totalCount)
 		{
 			$io->comment("The queue is empty.");
 
 			return;
 		}
 
-		if (null !== $count)
+		if (null !== $listing->totalCount)
 		{
 			$io->writeln(\sprintf(
 				"<fg=magenta>%d</> task%s would be removed.",
-				$count,
-				1 !== $count ? "s" : "",
+				$listing->totalCount,
+				1 !== $listing->totalCount ? "s" : "",
 			));
 		}
 
-		if (!$receiver instanceof ListableReceiverInterface)
+		if (!$listing->supportsListing)
 		{
 			$io->comment("This queue doesn't support listing its tasks.");
 
@@ -368,26 +339,28 @@ final class ClearQueueCommand extends Command
 			return;
 		}
 
-		$rows = [];
-
-		foreach ($receiver->all($limit + 1) as $envelope)
-		{
-			$rows[] = $this->formatEnvelope($envelope);
-		}
-
-		if (empty($rows))
+		if (empty($listing->tasks))
 		{
 			$io->comment("The queue is empty.");
 
 			return;
 		}
 
-		$hasMore = \count($rows) > $limit;
-		$rows = \array_slice($rows, 0, $limit);
+		$rows = [];
 
-		$io->table(["Id", "Task", "Task Id"], $rows);
+		foreach ($listing->tasks as $task)
+		{
+			$rows[] = [
+				$task->id?->toString() ?? "—",
+				\sprintf("%s <fg=gray>(%s)</>", $task->label, $task->envelope->getMessage()::class),
+				$task->taskId ?? "—",
+				$task->isStarted ? "<fg=yellow>running</>" : "queued",
+			];
+		}
 
-		if ($hasMore)
+		$io->table(["Id", "Task", "Task Id", "Status"], $rows);
+
+		if ($listing->hasMore)
 		{
 			$io->comment(\sprintf(
 				"Only the first %d tasks are listed, use --limit to list more.",
@@ -470,24 +443,5 @@ final class ClearQueueCommand extends Command
 		return $application
 			->find(self::STOP_WORKERS_COMMAND)
 			->run(new ArrayInput([]), $output);
-	}
-
-	/**
-	 * @return array{string, string, string}
-	 */
-	private function formatEnvelope (Envelope $envelope) : array
-	{
-		$message = $envelope->getMessage();
-		$id = $envelope->last(TransportMessageIdStamp::class)?->getId();
-
-		$label = $message instanceof Task
-			? \sprintf("%s <fg=gray>(%s)</>", $message->getMetaData()->label, $message::class)
-			: $message::class;
-
-		return [
-			\is_scalar($id) ? (string) $id : "—",
-			$label,
-			$envelope->last(TaskIdStamp::class)->taskId ?? "—",
-		];
 	}
 }

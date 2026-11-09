@@ -46,6 +46,31 @@ final class TaskLogModel
 	}
 
 	/**
+	 * Returns the ids of the given tasks that are currently being handled (= have an unfinished run)
+	 *
+	 * @param list<string> $taskIds
+	 *
+	 * @return list<string>
+	 */
+	public function getStartedTaskIds (array $taskIds) : array
+	{
+		if (empty($taskIds))
+		{
+			return [];
+		}
+
+		/** @var list<string> */
+		return $this->repository->createQueryBuilder("task")
+			->select("DISTINCT task.taskId")
+			->innerJoin("task.runs", "run")
+			->where("task.taskId IN (:taskIds)")
+			->andWhere("run.duration IS NULL")
+			->setParameter("taskIds", $taskIds)
+			->getQuery()
+			->getSingleColumnResult();
+	}
+
+	/**
 	 * Gets or creates the log entry for the given task uuid
 	 */
 	public function getLogForUuid (object $task, string $uuid) : TaskLog
