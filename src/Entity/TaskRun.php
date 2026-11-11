@@ -43,6 +43,25 @@ class TaskRun
 	public private(set) ?float $duration = null;
 
 	/**
+	 * The time (in nanoseconds) this run waited in the queue before it was started:
+	 * for the first run since the task was queued, for retries since the previous run finished.
+	 *
+	 * Is null for runs that were created before this field was added.
+	 */
+	#[ORM\Column(type: Types::FLOAT, nullable: true)]
+	public private(set) ?float $waitTime = null;
+
+	/**
+	 * The peak memory usage (in bytes) of the process while the run was handled.
+	 *
+	 * Symfony resets the peak memory usage when a worker receives a message, so this is the peak of this run.
+	 * For sync transports (where there is no worker), it is the peak of the whole request.
+	 * Is null for unfinished runs and runs that were created before this field was added.
+	 */
+	#[ORM\Column(type: Types::BIGINT, nullable: true)]
+	public private(set) ?int $memoryUsage = null;
+
+	/**
 	 */
 	#[ORM\Column(type: Types::BOOLEAN, nullable: true)]
 	public private(set) ?bool $success = null;
@@ -73,6 +92,27 @@ class TaskRun
 	{
 		$this->taskLog = $taskLog;
 		$this->timeStarted = now();
+		$this->waitTime = $this->calculateWaitTime();
+	}
+
+	/**
+	 * Calculates the time since the task was queued or since the previous run finished.
+	 */
+	private function calculateWaitTime () : float
+	{
+		$calculator = new DurationCalculator();
+		$previousRun = $this->taskLog->runs->last();
+
+		if (!$previousRun instanceof self)
+		{
+			return $calculator->calculateDuration($this->taskLog->timeQueued, $this->timeStarted);
+		}
+
+		// the duration of the previous run is subtracted, as the time it was running isn't waiting time
+		return max(
+			0.0,
+			$calculator->calculateDuration($previousRun->timeStarted, $this->timeStarted) - (float) $previousRun->duration,
+		);
 	}
 
 	// region Accessors
@@ -186,5 +226,6 @@ class TaskRun
 		$this->finishedProperly = $finishedProperly;
 		$this->output = $output;
 		$this->duration = new DurationCalculator()->calculateDuration($this->timeStarted, now());
+		$this->memoryUsage = memory_get_peak_usage();
 	}
 }

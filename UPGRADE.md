@@ -1,3 +1,9 @@
+4.x to 5.0
+==========
+
+* Wait time and memory usage are now stored per task run. You need to run migrations or upgrade the DB.
+
+
 3.x to 4.0
 ==========
 

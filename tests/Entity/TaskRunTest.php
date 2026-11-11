@@ -45,6 +45,31 @@ final class TaskRunTest extends TestCase
 		self::assertNull($run->finishedProperly);
 	}
 
+	public function testWaitTimeOfFirstRunIsMeasuredSinceQueueing () : void
+	{
+		self::mockTime("2026-06-16 12:00:00");
+		$log = $this->createLog();
+		self::mockTime("2026-06-16 12:00:03");
+		$run = $log->createRun();
+
+		self::assertEquals(3e9, $run->waitTime);
+	}
+
+	public function testWaitTimeOfRetryIsMeasuredSinceThePreviousRunFinished () : void
+	{
+		self::mockTime("2026-06-16 12:00:00");
+		$log = $this->createLog();
+		self::mockTime("2026-06-16 12:00:01");
+		$firstRun = $log->createRun();
+		self::mockTime("2026-06-16 12:00:05");
+		$firstRun->finish(false, null);
+		self::mockTime("2026-06-16 12:00:15");
+		$retry = $log->createRun();
+
+		self::assertEquals(1e9, $firstRun->waitTime);
+		self::assertEquals(10e9, $retry->waitTime);
+	}
+
 	public function testFinishMarksAsSuccessful () : void
 	{
 		self::mockTime("2026-06-16 12:00:00");
@@ -57,6 +82,15 @@ final class TaskRunTest extends TestCase
 		self::assertSame("some output", $run->output);
 		self::assertTrue($run->finishedProperly);
 		self::assertEquals(5e9, $run->duration);
+	}
+
+	public function testFinishStoresThePeakMemoryUsage () : void
+	{
+		$run = new TaskRun($this->createLog());
+		self::assertNull($run->memoryUsage);
+
+		$run->finish(true, null);
+		self::assertSame(memory_get_peak_usage(), $run->memoryUsage);
 	}
 
 	public function testFinishMarksAsFailure () : void

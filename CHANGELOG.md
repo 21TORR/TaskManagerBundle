@@ -1,7 +1,13 @@
-4.1.2 (unreleased)
+5.0.0 (unreleased)
 =====
 
+* (bc) Store wait time and memory usage per run. You need to run the migrations.
+* (feature) Add `WorkerRegistry`, which keeps track of all running messenger workers (host, PID, transports, status, handled / failed messages, memory usage) via heartbeats stored in the app cache.
+* (feature) Add `task-manager:workers` command to list all running workers.
+* (feature) Store the wait time of every `TaskRun` (time since the task was queued, or since the previous run finished for retries). Requires a migration: add a nullable `wait_time` float column to `task_manager_runs`.
+* (feature) Store the peak memory usage of every `TaskRun`. Requires a migration: add a nullable `memory_usage` bigint column to `task_manager_runs`.
 * (improvement) `RegisterTasksEvent::register()` is now variadic.
+* (bug) Add missing `Autowire` import in `TaskIdentificationMiddleware`.
 
 
 4.1.1 
