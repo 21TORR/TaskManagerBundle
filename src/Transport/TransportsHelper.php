@@ -100,6 +100,56 @@ final readonly class TransportsHelper
 	}
 
 	/**
+	 * Returns all transports that are actual queues (= can hold queued tasks), indexed by queue name and ordered by
+	 * priority, and the transports that were skipped (with the reason why they aren't a queue).
+	 *
+	 * @return array{array<string, TransportInterface>, array<string, string>}
+	 */
+	public function getQueues () : array
+	{
+		$transports = $this->getAllTransports();
+		$queues = [];
+		$skipped = [];
+
+		foreach ($this->getOrderedQueueNames() as $queueName)
+		{
+			$reason = $this->getNonQueueReason($queueName, $transports[$queueName]);
+
+			if (null !== $reason)
+			{
+				$skipped[$queueName] = $reason;
+				continue;
+			}
+
+			$queues[$queueName] = $transports[$queueName];
+		}
+
+		return [$queues, $skipped];
+	}
+
+	/**
+	 * Returns the reason why the transport is no queue that can hold queued tasks, or null if it is one.
+	 */
+	public function getNonQueueReason (string $queueName, TransportInterface $transport) : ?string
+	{
+		return match (true)
+		{
+			self::INTERNAL_TRANSPORT_NAME === $queueName => "internal queue of the task manager",
+			str_starts_with($queueName, "scheduler_") => "scheduler queue",
+			$transport instanceof SyncTransport => "uses a sync transport, tasks are handled directly and never queued",
+			default => null,
+		};
+	}
+
+	/**
+	 * Returns whether the given queue is a failure transport
+	 */
+	public function isFailureQueue (string $queueName) : bool
+	{
+		return \in_array($queueName, $this->bundleConfig->failureTransports, true);
+	}
+
+	/**
 	 * Returns all registered transport keys
 	 */
 	private function getAllRegisteredQueueNames () : array

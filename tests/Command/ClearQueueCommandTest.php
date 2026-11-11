@@ -3,6 +3,7 @@
 namespace Tests\Torr\TaskManager\Command;
 
 use PHPUnit\Framework\TestCase;
+use Psr\Log\NullLogger;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
@@ -12,15 +13,16 @@ use Symfony\Component\Messenger\Command\StopWorkersCommand;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\EventListener\StopWorkerOnRestartSignalListener;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
 use Symfony\Component\Messenger\Transport\InMemory\InMemoryTransport;
-use Symfony\Component\Messenger\Transport\Receiver\ListableReceiverInterface;
-use Symfony\Component\Messenger\Transport\Receiver\MessageCountAwareInterface;
 use Symfony\Component\Messenger\Transport\Sender\SendersLocatorInterface;
 use Symfony\Component\Messenger\Transport\Sync\SyncTransport;
 use Symfony\Component\Messenger\Transport\TransportInterface;
+use Tests\Torr\TaskManager\Fixtures\ListableTestTransport;
+use Tests\Torr\TaskManager\Fixtures\TestEntityManagerFactory;
 use Torr\TaskManager\Command\ClearQueueCommand;
 use Torr\TaskManager\Config\BundleConfig;
+use Torr\TaskManager\Model\TaskLogModel;
+use Torr\TaskManager\Queue\QueueManager;
 use Torr\TaskManager\Transport\TransportsHelper;
 
 /**
@@ -33,7 +35,7 @@ final class ClearQueueCommandTest extends TestCase
 	 */
 	public function testDryRunDoesNotRemoveAnything () : void
 	{
-		$queue = $this->createListableTransport(3);
+		$queue = ListableTestTransport::withMessages(3);
 		[$tester, $cache] = $this->createTester(["app" => $queue]);
 
 		$tester->execute(["queues" => ["app"]]);
@@ -49,7 +51,7 @@ final class ClearQueueCommandTest extends TestCase
 	 */
 	public function testForceRemovesAllMessagesInBatches () : void
 	{
-		$queue = $this->createListableTransport(1_234);
+		$queue = ListableTestTransport::withMessages(1_234);
 		[$tester, $cache] = $this->createTester(["app" => $queue]);
 
 		$tester->execute(["queues" => ["app"], "--force" => true]);
@@ -68,8 +70,8 @@ final class ClearQueueCommandTest extends TestCase
 		$app = new InMemoryTransport();
 		$app->send(new Envelope(new \stdClass()));
 		$app->send(new Envelope(new \stdClass()));
-		$failed = $this->createListableTransport(2);
-		$scheduler = $this->createListableTransport(2);
+		$failed = ListableTestTransport::withMessages(2);
+		$scheduler = ListableTestTransport::withMessages(2);
 
 		[$tester] = $this->createTester(
 			["app" => $app, "failed" => $failed, "scheduler_default" => $scheduler],
@@ -96,7 +98,7 @@ final class ClearQueueCommandTest extends TestCase
 		[$tester] = $this->createTester([
 			"app" => $sync,
 			"app_urgent" => $sync,
-			"scheduler_default" => $this->createListableTransport(1),
+			"scheduler_default" => ListableTestTransport::withMessages(1),
 			TransportsHelper::INTERNAL_TRANSPORT_NAME => $sync,
 		]);
 
@@ -116,10 +118,10 @@ final class ClearQueueCommandTest extends TestCase
 	 */
 	public function testInteractivelySelectQueues () : void
 	{
-		$app = $this->createListableTransport(2);
-		$other = $this->createListableTransport(3);
-		$failed = $this->createListableTransport(4);
-		$scheduler = $this->createListableTransport(5);
+		$app = ListableTestTransport::withMessages(2);
+		$other = ListableTestTransport::withMessages(3);
+		$failed = ListableTestTransport::withMessages(4);
+		$scheduler = ListableTestTransport::withMessages(5);
 
 		[$tester] = $this->createTester(
 			["app" => $app, "other" => $other, "failed" => $failed, "scheduler_default" => $scheduler],
@@ -146,7 +148,7 @@ final class ClearQueueCommandTest extends TestCase
 	 */
 	public function testInvalidInput () : void
 	{
-		[$tester] = $this->createTester(["app" => $this->createListableTransport(1)]);
+		[$tester] = $this->createTester(["app" => ListableTestTransport::withMessages(1)]);
 
 		self::assertSame(Command::FAILURE, $tester->execute([], ["interactive" => false]));
 		self::assertSame(Command::FAILURE, $tester->execute(["queues" => ["app"], "--all" => true]));
@@ -158,7 +160,7 @@ final class ClearQueueCommandTest extends TestCase
 	 */
 	public function testFailsIfWorkersCanNotBeRestarted () : void
 	{
-		$queue = $this->createListableTransport(2);
+		$queue = ListableTestTransport::withMessages(2);
 		$helper = new TransportsHelper(
 			new ServiceLocator(["app" => static fn () => $queue]),
 			new BundleConfig([]),
@@ -166,12 +168,20 @@ final class ClearQueueCommandTest extends TestCase
 		);
 
 		$application = new Application();
-		$application->addCommand(new ClearQueueCommand($helper, new BundleConfig([])));
+		$application->addCommand(new ClearQueueCommand($helper, self::createQueueManager($helper)));
 		$tester = new CommandTester($application->find("task-manager:clear-queue"));
 
 		self::assertSame(Command::FAILURE, $tester->execute(["queues" => ["app"], "--force" => true]));
 		self::assertSame(0, $queue->getMessageCount());
 		self::assertStringContainsString("Could not restart the workers", $tester->getDisplay());
+	}
+
+	/**
+	 *
+	 */
+	private static function createQueueManager (TransportsHelper $helper) : QueueManager
+	{
+		return new QueueManager($helper, new TaskLogModel(TestEntityManagerFactory::create(), new NullLogger()));
 	}
 
 	/**
@@ -194,66 +204,8 @@ final class ClearQueueCommandTest extends TestCase
 		$cache = new ArrayAdapter();
 		$application = new Application();
 		$application->addCommand(new StopWorkersCommand($cache));
-		$application->addCommand(new ClearQueueCommand($helper, new BundleConfig([], $failureTransports)));
+		$application->addCommand(new ClearQueueCommand($helper, self::createQueueManager($helper)));
 
 		return [new CommandTester($application->find("task-manager:clear-queue")), $cache];
-	}
-
-	/**
-	 *
-	 */
-	private function createListableTransport (int $count) : TransportInterface&ListableReceiverInterface&MessageCountAwareInterface
-	{
-		return new class($count) implements TransportInterface, ListableReceiverInterface, MessageCountAwareInterface {
-			/** @var array<int, Envelope> */
-			private array $messages = [];
-
-			public function __construct (int $count)
-			{
-				for ($i = 1; $i <= $count; ++$i)
-				{
-					$this->messages[$i] = new Envelope(new \stdClass(), [new TransportMessageIdStamp($i)]);
-				}
-			}
-
-			public function get () : iterable
-			{
-				return [];
-			}
-
-			public function ack (Envelope $envelope) : void {}
-
-			public function reject (Envelope $envelope) : void
-			{
-				$id = $envelope->last(TransportMessageIdStamp::class)?->getId();
-
-				if (\is_int($id))
-				{
-					unset($this->messages[$id]);
-				}
-			}
-
-			public function send (Envelope $envelope) : Envelope
-			{
-				return $envelope;
-			}
-
-			public function all (?int $limit = null) : iterable
-			{
-				return \array_slice($this->messages, 0, $limit, true);
-			}
-
-			public function find (mixed $id) : ?Envelope
-			{
-				return \is_int($id)
-					? ($this->messages[$id] ?? null)
-					: null;
-			}
-
-			public function getMessageCount () : int
-			{
-				return \count($this->messages);
-			}
-		};
 	}
 }
