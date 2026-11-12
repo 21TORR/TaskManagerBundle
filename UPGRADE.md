@@ -2,6 +2,7 @@
 ==========
 
 * Wait time and memory usage are now stored per task run. You need to run migrations or upgrade the DB.
+* `TaskIdentifier` was removed. The task id of a message is available via the `TaskIdStamp` of its envelope.
 
 
 3.x to 4.0

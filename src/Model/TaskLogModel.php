@@ -130,6 +130,23 @@ final class TaskLogModel
 	}
 
 	/**
+	 * Returns the managed instance of the run.
+	 *
+	 * The run might be detached in the meantime, e.g. if the entity manager was cleared while handling the message.
+	 */
+	public function getManagedRun (TaskRun $run) : ?TaskRun
+	{
+		if ($this->entityManager->contains($run))
+		{
+			return $run;
+		}
+
+		return null !== $run->id
+			? $this->entityManager->find(TaskRun::class, $run->id)
+			: null;
+	}
+
+	/**
 	 * @return $this
 	 */
 	public function flush () : static

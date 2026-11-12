@@ -16,6 +16,8 @@ use function Symfony\Component\Clock\now;
 #[ORM\Table(name: "task_manager_runs")]
 class TaskRun
 {
+	public const string CRASHED_OUTPUT = "The run was never finished. The worker most likely crashed or was killed while handling it.";
+
 	// region Fields
 	/**
 	 */
@@ -203,12 +205,28 @@ class TaskRun
 	}
 
 	/**
+	 * Marks the run as failed, because its process ended without finishing it (e.g. it crashed or was killed).
+	 *
+	 * This is called from a different process than the one that handled the run, so no memory usage is stored.
+	 */
+	public function abortAsCrashed (?string $output = null) : void
+	{
+		$this->finalizeRun(
+			success: false,
+			finishedProperly: false,
+			output: $output,
+			storeMemoryUsage: false,
+		);
+	}
+
+	/**
 	 * Finalizes the run
 	 */
 	private function finalizeRun (
 		bool $success,
 		bool $finishedProperly,
 		?string $output = null,
+		bool $storeMemoryUsage = true,
 	) : void
 	{
 		if ($this->isFinished)
@@ -226,6 +244,6 @@ class TaskRun
 		$this->finishedProperly = $finishedProperly;
 		$this->output = $output;
 		$this->duration = new DurationCalculator()->calculateDuration($this->timeStarted, now());
-		$this->memoryUsage = memory_get_peak_usage();
+		$this->memoryUsage = $storeMemoryUsage ? memory_get_peak_usage() : null;
 	}
 }
