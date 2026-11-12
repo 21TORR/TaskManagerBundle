@@ -3,28 +3,30 @@
 namespace Torr\TaskManager\Director;
 
 use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Output\OutputInterface;
 use Torr\Cli\Console\Style\TorrStyle;
 use Torr\TaskManager\Console\ChainOutput;
-use Torr\TaskManager\Entity\TaskRun;
-use Torr\TaskManager\Model\TaskLogModel;
 
 final class RunDirector
 {
 	public private(set) TorrStyle $io;
 	private ChainOutput $output;
+	private bool $finished = false;
 
 	/**
 	 */
 	public function __construct (
-		private readonly TaskLogModel $logModel,
-		private readonly ?TaskRun $run,
+		private readonly ?ActiveRun $activeRun,
+		?OutputInterface $mainOutput = null,
 	)
 	{
-		$this->output = new ChainOutput();
+		$this->output = new ChainOutput(mainOutput: $mainOutput);
 		$this->io = new TorrStyle(
 			new ArrayInput([]),
 			$this->output,
 		);
+
+		$this->activeRun?->registerOutput($this->output);
 	}
 
 	/**
@@ -36,16 +38,18 @@ final class RunDirector
 	}
 
 	/**
-	 * Marks the task as finished
+	 * Marks the task as finished.
+	 *
+	 * The result is stored together with the output as soon as the message is handled completely.
 	 */
 	public function finish (bool $success) : void
 	{
-		if (null === $this->run)
+		if ($this->finished)
 		{
 			return;
 		}
 
-		$this->run->finish($success, $this->output->getBufferedOutput());
-		$this->logModel->flush();
+		$this->finished = true;
+		$this->activeRun?->markAsFinished($success);
 	}
 }

@@ -2,6 +2,7 @@
 =====
 
 * (bc) Store wait time and memory usage per run. You need to run the migrations.
+* (bc) Remove `TaskIdentifier`.
 * (feature) Add `WorkerRegistry`, which keeps track of all running messenger workers (host, PID, transports, status, handled / failed messages, memory usage) via heartbeats stored in the app cache.
 * (feature) Add `task-manager:workers` command to list all running workers.
 * (feature) Add `task-manager:clear-queue` command to remove all queued tasks from the given queues (or `--all`) and restart the workers.
@@ -9,6 +10,11 @@
 * (feature) Store the wait time of every `TaskRun` (time since the task was queued, or since the previous run finished for retries). Requires a migration: add a nullable `wait_time` float column to `task_manager_runs`.
 * (feature) Store the peak memory usage of every `TaskRun`. Requires a migration: add a nullable `memory_usage` bigint column to `task_manager_runs`.
 * (improvement) `RegisterTasksEvent::register()` is now variadic.
+* (improvement) Every handled message now gets exactly one run per try, which is created when the handling starts – also for tasks whose handler doesn't use the `TaskDirector` and for tasks with multiple handlers.
+* (bug) Fix the exception and the duplicate runs for messages that don't extend `Task` on sync transports.
+* (bug) Keep the output of the handler in the run, if it throws or doesn't call `finish()`.
+* (bug) Mark unfinished runs of crashed workers as failed when the task is retried, instead of marking them as successful.
+* (bug) Finish the run properly, if the handler clears the entity manager.
 * (bug) Add missing `Autowire` import in `TaskIdentificationMiddleware`.
 
 

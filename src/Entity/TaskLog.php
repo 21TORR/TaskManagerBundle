@@ -145,6 +145,27 @@ class TaskLog
 	}
 
 	/**
+	 * Marks all unfinished runs as failed.
+	 *
+	 * @return int the number of aborted runs
+	 */
+	public function abortUnfinishedRuns () : int
+	{
+		$aborted = 0;
+
+		foreach ($this->runs as $run)
+		{
+			if (!$run->isFinished)
+			{
+				$run->abortAsCrashed(TaskRun::CRASHED_OUTPUT);
+				++$aborted;
+			}
+		}
+
+		return $aborted;
+	}
+
+	/**
 	 * Returns whether all runs for this task are finished
 	 */
 	public function isFinished () : bool
@@ -165,6 +186,10 @@ class TaskLog
 				$this->taskId,
 			));
 		}
+
+		// A task is never handled twice at the same time, so if there still is an unfinished run,
+		// its process ended without finishing it (e.g. it crashed or was killed).
+		$this->abortUnfinishedRuns();
 
 		$run = new TaskRun($this, $logger);
 		$this->runs->add($run);
