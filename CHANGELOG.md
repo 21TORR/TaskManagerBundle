@@ -16,6 +16,9 @@
 * (bug) Mark unfinished runs of crashed workers as failed when the task is retried, instead of marking them as successful.
 * (bug) Finish the run properly, if the handler clears the entity manager.
 * (bug) Add missing `Autowire` import in `TaskIdentificationMiddleware`.
+* (improvement) Display class name of wrapped Task when running `sf debug:scheduler`.
+* (bug) Add proper support for fetching and validating Tasks that are configured via `#[AsMessage(…)]` attribute.
+* (internal) Remove previously used Tag `task-manager.task`.
 
 
 4.1.1 
