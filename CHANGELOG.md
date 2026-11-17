@@ -1,4 +1,4 @@
-5.0.0 (unreleased)
+5.0.0
 =====
 
 * (bc) Store wait time and memory usage per run. You need to run the migrations.

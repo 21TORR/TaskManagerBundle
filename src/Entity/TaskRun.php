@@ -119,60 +119,6 @@ class TaskRun
 
 	// region Accessors
 	/**
-	 * @deprecated use the property directly instead
-	 */
-	public function getTaskLog () : TaskLog
-	{
-		return $this->taskLog;
-	}
-
-	/**
-	 * @deprecated use the property directly instead
-	 */
-	public function getTimeStarted () : \DateTimeImmutable
-	{
-		return $this->timeStarted;
-	}
-
-	/**
-	 * @deprecated use the property directly instead
-	 *
-	 * Whether the task was finished successfully
-	 *
-	 * @return bool|null Whether the task was finished successfully. Will return null if not yet finished.
-	 */
-	public function isSuccess () : ?bool
-	{
-		return $this->success;
-	}
-
-	/**
-	 * @deprecated use the property directly instead
-	 */
-	public function getOutput () : ?string
-	{
-		return $this->output;
-	}
-
-	/**
-	 * @deprecated use the property directly instead
-	 */
-	public function isFinished () : bool
-	{
-		return null !== $this->duration;
-	}
-
-	/**
-	 * The duration of the run in nanoseconds (if the task is finished already)
-	 *
-	 * @deprecated use the property directly instead
-	 */
-	public function getDuration () : ?float
-	{
-		return $this->duration;
-	}
-
-	/**
 	 * Whether the task was finished properly or was automatically finished.
 	 */
 	public function hasFinishedProperly () : bool
