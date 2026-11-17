@@ -80,40 +80,6 @@ class TaskLog
 	}
 
 	/**
-	 * @deprecated use the property directly instead
-	 */
-	public function getId () : ?int
-	{
-		return $this->id;
-	}
-
-	/**
-	 * @deprecated use the property directly instead
-	 */
-	public function getTaskId () : string
-	{
-		return $this->taskId;
-	}
-
-	/**
-	 * @deprecated use the property directly instead
-	 */
-	public function getTimeQueued () : \DateTimeImmutable
-	{
-		return $this->timeQueued;
-	}
-
-	/**
-	 * @return Collection<int, TaskRun>
-	 *
-	 * @deprecated use the property directly instead
-	 */
-	public function getRuns () : Collection
-	{
-		return $this->runs;
-	}
-
-	/**
 	 * Returns whether the task was finished successfully
 	 */
 	public function isSuccess () : bool
@@ -222,19 +188,6 @@ class TaskLog
 	}
 
 	/**
-	 * @deprecated Use TaskDetailsNormalizer::deserializeTask() instead. Will be removed in 4.0.
-	 *
-	 * @todo Remove in 4.0.
-	 */
-	public function getTaskObject () : null
-	{
-		// @phpstan-ignore-next-line todoBy.sfDeprecation
-		trigger_deprecation("21torr/task-manager", "3.2.5", "TaskLog::getTaskObject() is deprecated, use TaskDetailsNormalizer::deserializeTask() instead.");
-
-		return null;
-	}
-
-	/**
 	 * @return bool|null whether the task succeeded/failed or null, if it hasn't run yet
 	 */
 	public function getStatus () : ?bool
@@ -289,15 +242,5 @@ class TaskLog
 	public function getTransport () : ?string
 	{
 		return $this->getTaskDetails()["transport"] ?? null;
-	}
-
-	/**
-	 * Returns the class of the message
-	 *
-	 * @deprecated use the property directly instead
-	 */
-	public function getTaskClass () : string
-	{
-		return $this->taskClass;
 	}
 }
