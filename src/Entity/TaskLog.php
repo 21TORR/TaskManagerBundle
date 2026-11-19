@@ -7,7 +7,9 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Uid\UuidV7;
 use Torr\TaskManager\Exception\Log\InvalidLogActionException;
+use Torr\TaskManager\Exception\Log\InvalidTaskIdException;
 use Torr\TaskManager\Task\Task;
 
 use function Symfony\Component\Clock\now;
@@ -40,6 +42,27 @@ class TaskLog
 	 */
 	#[ORM\Column(type: Types::STRING, length: 50, unique: true)]
 	public private(set) string $taskId;
+
+	/**
+	 * The task id as UUIDv7
+	 *
+	 * @throws InvalidTaskIdException
+	 */
+	public UuidV7 $taskUuid {
+		get {
+			try
+			{
+				return UuidV7::fromString($this->taskId);
+			}
+			catch (\InvalidArgumentException $exception)
+			{
+				throw new InvalidTaskIdException(
+					\sprintf("Task id '%s' of task log #%s is no valid UUIDv7.", $this->taskId, $this->id),
+					previous: $exception,
+				);
+			}
+		}
+	}
 
 	/**
 	 *

@@ -1,3 +1,9 @@
+5.1.0
+=====
+
+* (feature) Add `TaskLog::$taskUuid` virtual property to get the task id as `UuidV7`.
+
+
 5.0.0
 =====
 
