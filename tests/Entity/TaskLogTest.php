@@ -4,8 +4,11 @@ namespace Tests\Torr\TaskManager\Entity;
 
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Clock\Test\ClockSensitiveTrait;
+use Symfony\Component\Uid\Uuid;
+use Symfony\Component\Uid\UuidV7;
 use Torr\TaskManager\Entity\TaskLog;
 use Torr\TaskManager\Exception\Log\InvalidLogActionException;
+use Torr\TaskManager\Exception\Log\InvalidTaskIdException;
 use Torr\TaskManager\Task\Task;
 use Torr\TaskManager\Task\TaskMetaData;
 
@@ -190,6 +193,30 @@ final class TaskLogTest extends TestCase
 		$log = new TaskLog($task, "my-uuid");
 
 		self::assertSame("my-uuid", $log->taskId);
+	}
+
+	public function testTaskUuidParsesTaskId () : void
+	{
+		$uuid = new UuidV7();
+		$log = new TaskLog($this->createTask(), $uuid->toRfc4122());
+
+		self::assertTrue($uuid->equals($log->taskUuid));
+	}
+
+	public function testTaskUuidThrowsForOtherUuidVersion () : void
+	{
+		$log = new TaskLog($this->createTask(), Uuid::v4()->toRfc4122());
+
+		$this->expectException(InvalidTaskIdException::class);
+		$log->taskUuid->toRfc4122();
+	}
+
+	public function testTaskUuidThrowsForInvalidTaskId () : void
+	{
+		$log = $this->createLog();
+
+		$this->expectException(InvalidTaskIdException::class);
+		$log->taskUuid->toRfc4122();
 	}
 
 	public function testTaskClassMatchesTaskClass () : void
