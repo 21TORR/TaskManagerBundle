@@ -29,6 +29,8 @@ class TaskManagerBundleExtension extends BundleExtension implements PrependExten
 		$container->getDefinition(BundleConfig::class)
 			->setArgument('$sortedQueues', $config["queues"]);
 
+		$container->setParameter(RegisterTaskIdentificationMiddlewareCompilerPass::BUSES_PARAMETER, $config["autoinstall_on_buses"]);
+
 		$container->getDefinition(LogCleaner::class)
 			->setArgument('$logTtlInDays', $config["log"]["ttl"])
 			->setArgument('$logMaxEntries', $config["log"]["max_entries"]);

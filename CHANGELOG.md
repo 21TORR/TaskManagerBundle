@@ -2,6 +2,7 @@
 =====
 
 * (feature) Add `TaskLog::$taskUuid` virtual property to get the task id as `UuidV7`.
+* (feature) Automatically add the `TaskIdentificationMiddleware` to the buses configured in `task_manager.autoinstall_on_buses` (default: `["default"]`, the default bus). Pass `[]` or `null` to disable it. You can remove the middleware from your `framework.messenger.buses` config.
 
 
 5.0.0
