@@ -3,7 +3,9 @@
 namespace Torr\TaskManager\Worker;
 
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Console\Event\ConsoleCommandEvent;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
+use Symfony\Component\Messenger\Command\ConsumeMessagesCommand;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Event\WorkerMessageFailedEvent;
 use Symfony\Component\Messenger\Event\WorkerMessageHandledEvent;
@@ -29,6 +31,7 @@ final class WorkerHeartbeatListener
 	private const int HEARTBEAT_INTERVAL_SECONDS = 15;
 	private ?WorkerInfo $worker = null;
 	private int $lastHeartbeat = 0;
+	private ?WorkerLimits $limits = null;
 
 	/**
 	 */
@@ -36,6 +39,19 @@ final class WorkerHeartbeatListener
 		private readonly WorkerRegistry $registry,
 		private readonly LoggerInterface $logger,
 	) {}
+
+	/**
+	 * The worker itself doesn't expose its limits, so they are read from the input of the consume command,
+	 * which is dispatched before the worker starts.
+	 */
+	#[AsEventListener]
+	public function onConsoleCommand (ConsoleCommandEvent $event) : void
+	{
+		if ($event->getCommand() instanceof ConsumeMessagesCommand)
+		{
+			$this->limits = WorkerLimits::fromInput($event->getInput());
+		}
+	}
 
 	/**
 	 */
@@ -56,6 +72,8 @@ final class WorkerHeartbeatListener
 			startedAt: $now,
 			lastSeenAt: $now,
 			memoryUsage: memory_get_usage(true),
+			availableMemory: WorkerLimits::parseBytes((string) \ini_get("memory_limit")),
+			limits: $this->limits ?? new WorkerLimits(),
 		);
 
 		$this->persist();
@@ -188,6 +206,8 @@ final class WorkerHeartbeatListener
 			handledMessages: $handledMessages ?? $worker->handledMessages,
 			failedMessages: $failedMessages ?? $worker->failedMessages,
 			memoryUsage: $worker->memoryUsage,
+			availableMemory: $worker->availableMemory,
+			limits: $worker->limits,
 		);
 	}
 
@@ -219,6 +239,8 @@ final class WorkerHeartbeatListener
 			handledMessages: $worker->handledMessages,
 			failedMessages: $worker->failedMessages,
 			memoryUsage: memory_get_usage(true),
+			availableMemory: $worker->availableMemory,
+			limits: $worker->limits,
 		);
 		$this->lastHeartbeat = time();
 

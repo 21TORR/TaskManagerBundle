@@ -3,6 +3,7 @@
 
 * (feature) Add `TaskLog::$taskUuid` virtual property to get the task id as `UuidV7`.
 * (feature) Automatically add the `TaskIdentificationMiddleware` to the buses configured in `task_manager.autoinstall_on_buses` (default: `["default"]`, the default bus). Pass `[]` or `null` to disable it. You can remove the middleware from your `framework.messenger.buses` config.
+* (feature) Store the available memory (PHP `memory_limit`) and the limits (`--limit`, `--failure-limit`, `--memory-limit`, `--time-limit`, `--sleep`) of every worker in `WorkerInfo` and display them in `task-manager:workers`.
 * (bug) The `TaskIdentificationMiddleware` checks the handlers of the bus it is added to, instead of always the ones of the default bus.
 
 
