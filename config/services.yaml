@@ -9,6 +9,8 @@ services:
             - ../src/Entity/*
             - ../src/Event/*
             - ../src/Exception/*
+            # registered per bus in `RegisterTaskIdentificationMiddlewareCompilerPass`
+            - ../src/Identification/TaskIdentificationMiddleware.php
             - ../src/Task/Task.php
             - ../src/Task/TaskMetaData.php
             - ../src/TaskManagerBundle.php

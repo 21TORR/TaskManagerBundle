@@ -10,7 +10,8 @@ use Symfony\Component\DependencyInjection\Reference;
 use Torr\TaskManager\Identification\TaskIdentificationMiddleware;
 
 /**
- * Automatically adds the {@see TaskIdentificationMiddleware} to the configured messenger buses.
+ * Automatically adds the {@see TaskIdentificationMiddleware} to the configured messenger buses and gives every bus
+ * its own instance, also if the middleware was added manually.
  *
  * Must run before the `MessengerPass`, as that one consumes the middleware parameters of the buses.
  */
@@ -25,6 +26,11 @@ final class RegisterTaskIdentificationMiddlewareCompilerPass implements Compiler
 	 */
 	public function process (ContainerBuilder $container) : void
 	{
+		foreach (array_keys($container->findTaggedServiceIds("messenger.bus")) as $busId)
+		{
+			$this->replaceManuallyAddedMiddleware($container, $busId);
+		}
+
 		if (!$container->hasParameter(self::BUSES_PARAMETER))
 		{
 			return;
@@ -38,6 +44,67 @@ final class RegisterTaskIdentificationMiddlewareCompilerPass implements Compiler
 		{
 			$this->registerOnBus($container, $this->resolveBusId($container, $bus));
 		}
+	}
+
+	/**
+	 * Replaces the shared middleware service in the manually configured middleware with the instance of the bus,
+	 * as otherwise it would check the handlers of the wrong bus.
+	 */
+	private function replaceManuallyAddedMiddleware (ContainerBuilder $container, string $busId) : void
+	{
+		$parameter = "{$busId}.middleware";
+
+		if (!$container->hasParameter($parameter))
+		{
+			return;
+		}
+
+		/** @var list<array{id: string, arguments?: list<mixed>}> $middleware */
+		$middleware = $container->getParameter($parameter);
+		$changed = false;
+
+		foreach ($middleware as $index => $item)
+		{
+			if (TaskIdentificationMiddleware::class === $item["id"])
+			{
+				$middleware[$index]["id"] = $this->registerBusMiddlewareService($container, $busId);
+				$changed = true;
+			}
+		}
+
+		if ($changed)
+		{
+			$container->setParameter($parameter, $middleware);
+		}
+	}
+
+	/**
+	 * Registers the middleware instance for the given bus, as it needs to check the handlers of this bus.
+	 *
+	 * @return string the service id
+	 */
+	private function registerBusMiddlewareService (ContainerBuilder $container, string $busId) : string
+	{
+		$serviceId = self::getServiceId($busId);
+
+		if (!$container->hasDefinition($serviceId))
+		{
+			$container->setDefinition(
+				$serviceId,
+				(new Definition(TaskIdentificationMiddleware::class))
+					->setAutowired(true)
+					->setArgument('$handlersLocator', new Reference("{$busId}.messenger.handlers_locator")),
+			);
+		}
+
+		return $serviceId;
+	}
+
+	/**
+	 */
+	private static function getServiceId (string $busId) : string
+	{
+		return "task_manager.middleware.task_identification.{$busId}";
 	}
 
 	/**
@@ -57,22 +124,15 @@ final class RegisterTaskIdentificationMiddlewareCompilerPass implements Compiler
 
 		/** @var list<array{id: string, arguments?: list<mixed>}> $middleware */
 		$middleware = $container->getParameter($parameter);
-		$serviceId = "task_manager.middleware.task_identification.{$busId}";
 		$ids = array_column($middleware, "id");
 
 		// skip if it was already added manually
-		if (\in_array(TaskIdentificationMiddleware::class, $ids, true) || \in_array($serviceId, $ids, true))
+		if (\in_array(self::getServiceId($busId), $ids, true))
 		{
 			return;
 		}
 
-		// every bus needs its own instance, as it needs to check the handlers of this bus
-		$container->setDefinition(
-			$serviceId,
-			(new Definition(TaskIdentificationMiddleware::class))
-				->setAutowired(true)
-				->setArgument('$handlersLocator', new Reference("{$busId}.messenger.handlers_locator")),
-		);
+		$serviceId = $this->registerBusMiddlewareService($container, $busId);
 
 		// add it right before the message is sent / handled
 		$position = array_search("send_message", $ids, true);

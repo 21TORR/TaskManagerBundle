@@ -111,16 +111,49 @@ final class RegisterTaskIdentificationMiddlewareCompilerPassTest extends TestCas
 		);
 	}
 
-	public function testSkipsManuallyAddedMiddleware () : void
+	public function testReplacesManuallyAddedMiddlewareWithoutAddingItTwice () : void
 	{
 		$container = new ContainerBuilder();
 		$container->register("command.bus")->addTag("messenger.bus");
-		$container->setParameter("command.bus.middleware", [["id" => TaskIdentificationMiddleware::class], ["id" => "handle_message"]]);
+		$container->setParameter("command.bus.middleware", [["id" => TaskIdentificationMiddleware::class], ["id" => "custom"], ["id" => "handle_message"]]);
 		$container->setParameter(RegisterTaskIdentificationMiddlewareCompilerPass::BUSES_PARAMETER, ["command.bus"]);
 
 		(new RegisterTaskIdentificationMiddlewareCompilerPass())->process($container);
 
-		self::assertSame([TaskIdentificationMiddleware::class, "handle_message"], $this->getMiddlewareIds($container, "command.bus"));
+		self::assertSame(
+			["task_manager.middleware.task_identification.command.bus", "custom", "handle_message"],
+			$this->getMiddlewareIds($container, "command.bus"),
+		);
+	}
+
+	public function testReplacesManuallyAddedMiddlewareOnEveryBus () : void
+	{
+		$container = new ContainerBuilder();
+
+		foreach (["command.bus", "event.bus", "query.bus"] as $busId)
+		{
+			$container->register($busId)->addTag("messenger.bus");
+		}
+
+		$container->setParameter("command.bus.middleware", [["id" => TaskIdentificationMiddleware::class], ["id" => "handle_message"]]);
+		$container->setParameter("event.bus.middleware", [["id" => TaskIdentificationMiddleware::class], ["id" => "handle_message"]]);
+		$container->setParameter("query.bus.middleware", [["id" => "handle_message"]]);
+		$container->setParameter(RegisterTaskIdentificationMiddlewareCompilerPass::BUSES_PARAMETER, []);
+
+		(new RegisterTaskIdentificationMiddlewareCompilerPass())->process($container);
+
+		foreach (["command.bus", "event.bus"] as $busId)
+		{
+			$serviceId = "task_manager.middleware.task_identification.{$busId}";
+			self::assertSame([$serviceId, "handle_message"], $this->getMiddlewareIds($container, $busId));
+			self::assertEquals(
+				new Reference("{$busId}.messenger.handlers_locator"),
+				$container->getDefinition($serviceId)->getArgument('$handlersLocator'),
+			);
+		}
+
+		self::assertSame(["handle_message"], $this->getMiddlewareIds($container, "query.bus"));
+		self::assertFalse($container->hasDefinition("task_manager.middleware.task_identification.query.bus"));
 	}
 
 	public function testUnknownBus () : void
