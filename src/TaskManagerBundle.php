@@ -2,11 +2,13 @@
 
 namespace Torr\TaskManager;
 
+use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 use Torr\TaskManager\DependencyInjection\AutoDetectFailureTransportsCompilerPass;
 use Torr\TaskManager\DependencyInjection\FindTaskClassesCompilerPass;
+use Torr\TaskManager\DependencyInjection\RegisterTaskIdentificationMiddlewareCompilerPass;
 use Torr\TaskManager\DependencyInjection\TaskManagerBundleExtension;
 
 final class TaskManagerBundle extends Bundle
@@ -26,7 +28,9 @@ final class TaskManagerBundle extends Bundle
 	{
 		$container
 			->addCompilerPass(new AutoDetectFailureTransportsCompilerPass())
-			->addCompilerPass(new FindTaskClassesCompilerPass());
+			->addCompilerPass(new FindTaskClassesCompilerPass())
+			// must run before the `MessengerPass` of the framework bundle
+			->addCompilerPass(new RegisterTaskIdentificationMiddlewareCompilerPass(), PassConfig::TYPE_BEFORE_OPTIMIZATION, 10);
 	}
 
 	/**

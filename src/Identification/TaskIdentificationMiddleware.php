@@ -33,7 +33,6 @@ readonly class TaskIdentificationMiddleware implements MiddlewareInterface
 	public function __construct (
 		private TaskLogModel $logModel,
 		private TaskDetailsNormalizer $detailsNormalizer,
-		#[Autowire(service: 'messenger.bus.default.messenger.handlers_locator')]
 		private HandlersLocatorInterface $handlersLocator,
 		#[Autowire(service: 'messenger.senders_locator')]
 		private SendersLocatorInterface $sendersLocator,
