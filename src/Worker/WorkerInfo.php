@@ -52,5 +52,13 @@ final readonly class WorkerInfo
 		 * The memory (in bytes) the worker process had allocated at the last heartbeat
 		 */
 		public int $memoryUsage = 0,
+		/**
+		 * The PHP memory limit (in bytes) of the worker process, `null` if unlimited
+		 */
+		public ?int $availableMemory = null,
+		/**
+		 * The limits the worker was started with
+		 */
+		public WorkerLimits $limits = new WorkerLimits(),
 	) {}
 }
