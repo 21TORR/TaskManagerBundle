@@ -1,3 +1,9 @@
+5.2.1
+=====
+
+* (improvement) Fix Doctrine ORM deprecation.
+
+
 5.2.0
 =====
 
