@@ -1,3 +1,9 @@
+5.3.0
+=====
+
+* (feature) Dispatch `TasksQueuedViaCliEvent` after queuing tasks via `task-manager:queue` and `QueuesClearedViaCliEvent` after clearing queues via `task-manager:clear-queue`.
+
+
 5.2.1
 =====
 
