@@ -9,6 +9,7 @@ use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\DependencyInjection\ServiceLocator;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Messenger\Command\StopWorkersCommand;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\EventListener\StopWorkerOnRestartSignalListener;
@@ -21,6 +22,7 @@ use Tests\Torr\TaskManager\Fixtures\ListableTestTransport;
 use Tests\Torr\TaskManager\Fixtures\TestEntityManagerFactory;
 use Torr\TaskManager\Command\ClearQueueCommand;
 use Torr\TaskManager\Config\BundleConfig;
+use Torr\TaskManager\Event\QueuesClearedViaCliEvent;
 use Torr\TaskManager\Model\TaskLogModel;
 use Torr\TaskManager\Queue\QueueManager;
 use Torr\TaskManager\Transport\TransportsHelper;
@@ -60,6 +62,51 @@ final class ClearQueueCommandTest extends TestCase
 		self::assertSame(0, $queue->getMessageCount());
 		self::assertStringContainsString("Removed 1234 tasks", $tester->getDisplay());
 		self::assertTrue($cache->hasItem(StopWorkerOnRestartSignalListener::RESTART_REQUESTED_TIMESTAMP_KEY));
+	}
+
+	/**
+	 *
+	 */
+	public function testForceDispatchesEvent () : void
+	{
+		$dispatcher = new EventDispatcher();
+		$events = [];
+		$dispatcher->addListener(QueuesClearedViaCliEvent::class, static function (QueuesClearedViaCliEvent $event) use (&$events) : void
+		{
+			$events[] = $event;
+		});
+
+		[$tester] = $this->createTester(
+			[
+				"app" => ListableTestTransport::withMessages(3),
+				"other" => ListableTestTransport::withMessages(2),
+			],
+			dispatcher: $dispatcher,
+		);
+
+		$tester->execute(["queues" => ["app", "other"], "--force" => true]);
+
+		self::assertCount(1, $events);
+		self::assertSame(["app" => 3, "other" => 2], $events[0]->removedTasks);
+	}
+
+	/**
+	 *
+	 */
+	public function testDryRunDoesNotDispatchEvent () : void
+	{
+		$dispatcher = new EventDispatcher();
+		$dispatched = false;
+		$dispatcher->addListener(QueuesClearedViaCliEvent::class, static function () use (&$dispatched) : void
+		{
+			$dispatched = true;
+		});
+
+		[$tester] = $this->createTester(["app" => ListableTestTransport::withMessages(3)], dispatcher: $dispatcher);
+
+		$tester->execute(["queues" => ["app"]]);
+
+		self::assertFalse($dispatched);
 	}
 
 	/**
@@ -168,7 +215,7 @@ final class ClearQueueCommandTest extends TestCase
 		);
 
 		$application = new Application();
-		$application->addCommand(new ClearQueueCommand($helper, self::createQueueManager($helper)));
+		$application->addCommand(new ClearQueueCommand($helper, self::createQueueManager($helper), new EventDispatcher()));
 		$tester = new CommandTester($application->find("task-manager:clear-queue"));
 
 		self::assertSame(Command::FAILURE, $tester->execute(["queues" => ["app"], "--force" => true]));
@@ -190,7 +237,11 @@ final class ClearQueueCommandTest extends TestCase
 	 *
 	 * @return array{CommandTester, ArrayAdapter}
 	 */
-	private function createTester (array $transports, array $failureTransports = []) : array
+	private function createTester (
+		array $transports,
+		array $failureTransports = [],
+		EventDispatcher $dispatcher = new EventDispatcher(),
+	) : array
 	{
 		$helper = new TransportsHelper(
 			new ServiceLocator(array_map(
@@ -204,7 +255,7 @@ final class ClearQueueCommandTest extends TestCase
 		$cache = new ArrayAdapter();
 		$application = new Application();
 		$application->addCommand(new StopWorkersCommand($cache));
-		$application->addCommand(new ClearQueueCommand($helper, self::createQueueManager($helper)));
+		$application->addCommand(new ClearQueueCommand($helper, self::createQueueManager($helper), $dispatcher));
 
 		return [new CommandTester($application->find("task-manager:clear-queue")), $cache];
 	}

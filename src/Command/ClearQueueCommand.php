@@ -2,6 +2,7 @@
 
 namespace Torr\TaskManager\Command;
 
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -15,6 +16,7 @@ use Symfony\Component\Messenger\Transport\Receiver\ListableReceiverInterface;
 use Symfony\Component\Messenger\Transport\Receiver\MessageCountAwareInterface;
 use Symfony\Component\Messenger\Transport\Receiver\ReceiverInterface;
 use Torr\Cli\Console\Style\TorrStyle;
+use Torr\TaskManager\Event\QueuesClearedViaCliEvent;
 use Torr\TaskManager\Queue\QueueListing;
 use Torr\TaskManager\Queue\QueueManager;
 use Torr\TaskManager\Task\Task;
@@ -39,6 +41,7 @@ final class ClearQueueCommand extends Command
 	public function __construct (
 		private readonly TransportsHelper $transportsHelper,
 		private readonly QueueManager $queueManager,
+		private readonly EventDispatcherInterface $dispatcher,
 	)
 	{
 		parent::__construct();
@@ -125,11 +128,13 @@ final class ClearQueueCommand extends Command
 		}
 
 		$total = 0;
+		$removedPerQueue = [];
 
 		foreach ($receivers as $queueName => $receiver)
 		{
 			$removed = $this->clearQueue($io, $receiver);
 			$total += $removed;
+			$removedPerQueue[$queueName] = $removed;
 
 			$io->writeln(\sprintf(
 				"• Removed <fg=magenta>%d</> task%s from queue <fg=yellow>%s</>",
@@ -139,6 +144,7 @@ final class ClearQueueCommand extends Command
 			));
 		}
 
+		$this->dispatcher->dispatch(new QueuesClearedViaCliEvent($removedPerQueue));
 		$io->success(\sprintf("Removed %d task%s.", $total, 1 !== $total ? "s" : ""));
 
 		return $this->restartWorkers($io, $output);

@@ -2,6 +2,7 @@
 
 namespace Torr\TaskManager\Command;
 
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -9,6 +10,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Torr\Cli\Console\Style\TorrStyle;
 use Torr\Hosting\Hosting\HostingEnvironment;
+use Torr\TaskManager\Event\TasksQueuedViaCliEvent;
 use Torr\TaskManager\Exception\Registry\UnknownTaskKeyException;
 use Torr\TaskManager\Manager\TaskManager;
 use Torr\TaskManager\Registry\TaskRegistry;
@@ -23,6 +25,7 @@ final class QueueTasksCommand extends Command
 		private readonly TaskRegistry $taskRegistry,
 		private readonly TaskManager $taskManager,
 		private readonly HostingEnvironment $hostingEnvironment,
+		private readonly EventDispatcherInterface $dispatcher,
 	)
 	{
 		parent::__construct();
@@ -70,6 +73,11 @@ final class QueueTasksCommand extends Command
 				$this->formatTaskLabel($task),
 			));
 			$this->taskManager->enqueue($task);
+		}
+
+		if ([] !== $tasksToQueue)
+		{
+			$this->dispatcher->dispatch(new TasksQueuedViaCliEvent(array_values($tasksToQueue)));
 		}
 
 		$io->success("All done.");
